@@ -22,3 +22,11 @@ export const cardStyle = Styles.style({
         }
     }
 })
+
+export const numberInputStyle = Styles.style({
+    $nest: {
+        'input': {
+            textAlign: 'center'
+        }
+    }
+})

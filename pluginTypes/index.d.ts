@@ -2,6 +2,7 @@
 declare module "@scom/scom-product/index.css.ts" {
     export const imageStyle: string;
     export const cardStyle: string;
+    export const numberInputStyle: string;
 }
 /// <amd-module name="@scom/scom-product/interface.ts" />
 declare module "@scom/scom-product/interface.ts" {
@@ -49,6 +50,42 @@ declare module "@scom/scom-product/model.ts" {
         private getActions;
     }
 }
+/// <amd-module name="@scom/scom-product/productDetail.tsx" />
+declare module "@scom/scom-product/productDetail.tsx" {
+    import { ControlElement, Module } from '@ijstech/components';
+    import { ProductModel } from "@scom/scom-product/model.ts";
+    global {
+        namespace JSX {
+            interface IntrinsicElements {
+                ['i-scom-product--detail']: ControlElement;
+            }
+        }
+    }
+    export class ScomProductDetail extends Module {
+        private lblName;
+        private imgProduct;
+        private lblDescription;
+        private lblStock;
+        private lblPrice;
+        private edtQuantity;
+        private iconMinus;
+        private iconPlus;
+        private btnAddToCart;
+        private _model;
+        get model(): ProductModel;
+        set model(value: ProductModel);
+        private get quantity();
+        show(): void;
+        clear(): void;
+        private updateQuantity;
+        private increaseQuantity;
+        private decreaseQuantity;
+        private handleQuantityChanged;
+        private handleAddToCart;
+        init(): void;
+        render(): any;
+    }
+}
 /// <amd-module name="@scom/scom-product" />
 declare module "@scom/scom-product" {
     import { ControlElement, Module } from '@ijstech/components';
@@ -67,6 +104,7 @@ declare module "@scom/scom-product" {
         private lblName;
         private lblPrice;
         private model;
+        private detailModule;
         getConfigurators(): {
             name: string;
             target: string;
@@ -81,6 +119,7 @@ declare module "@scom/scom-product" {
         getTag(): any;
         setTag(value: any): void;
         private updateUIBySetData;
+        private handleProductClick;
         init(): void;
         render(): any;
     }

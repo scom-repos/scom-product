@@ -9,6 +9,7 @@ import {
 import { cardStyle, imageStyle } from './index.css';
 import { IProductInfo } from './interface';
 import { ProductModel } from './model';
+import { ScomProductDetail } from './productDetail';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -28,6 +29,7 @@ export class ScomProduct extends Module {
     private lblName: Label;
     private lblPrice: Label;
     private model: ProductModel;
+    private detailModule: ScomProductDetail;
 
     getConfigurators() {
         return this.model.getConfigurators()
@@ -56,6 +58,31 @@ export class ScomProduct extends Module {
         this.lblPrice.caption = `${price || ""} ${currency || ""}`;
     }
 
+    private async handleProductClick() {
+        if (!this.detailModule) {
+            this.detailModule = new ScomProductDetail();
+            this.detailModule.model = this.model;
+        }
+        const modal = this.detailModule.openModal({
+            width: "90vw",
+            height: "90vh",
+            overflow: { y: 'auto' },
+            popupPlacement: 'center',
+            mediaQueries: [
+                {
+                    maxWidth: '767px',
+                    properties: {
+                        height: '100vh',
+                        maxHeight: '100vh'
+                    }
+                }
+            ]
+        });
+        await this.detailModule.ready();
+        this.detailModule.show();
+        modal.refresh();
+    }
+
     init() {
         super.init();
         this.model = new ProductModel();
@@ -74,6 +101,7 @@ export class ScomProduct extends Module {
                     border={{ radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }}
                     overflow="hidden"
                     cursor='pointer'
+                    onClick={this.handleProductClick}
                 >
                     <i-stack
                         direction="horizontal"

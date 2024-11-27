@@ -1,0 +1,23 @@
+{
+  "env": "testnet",
+  "main": "@modules/module1",
+  "bundle": true,
+  "moduleDir": "modules",
+  "modules": {
+    "@modules/module1": {
+      "path": "module1"
+    }
+  },
+  "dependencies": {
+    "@scom/scom-product": "*"
+  },
+  "menus": [
+  ],
+  "routes": [
+    {
+      "url": "/module1",
+      "module": "@modules/module1",
+      "default": true
+    }
+  ]
+}

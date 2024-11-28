@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-product/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.numberInputStyle = exports.cardStyle = exports.imageStyle = void 0;
+    exports.imageListStyle = exports.numberInputStyle = exports.cardStyle = exports.imageStyle = void 0;
     const Theme = components_1.Styles.Theme.ThemeVars;
     exports.imageStyle = components_1.Styles.style({
         transform: 'translateY(-100%)',
@@ -32,6 +32,13 @@ define("@scom/scom-product/index.css.ts", ["require", "exports", "@ijstech/compo
         $nest: {
             'input': {
                 textAlign: 'center'
+            }
+        }
+    });
+    exports.imageListStyle = components_1.Styles.style({
+        $nest: {
+            'i-image.active img': {
+                borderColor: Theme.colors.error.main
             }
         }
     });
@@ -95,9 +102,20 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             return Number(this.edtQuantity.value) || 1;
         }
         show() {
+            this.pnlImageListWrapper.visible = false;
+            this.activeImage = undefined;
+            this.pnlImages.clearInnerHTML();
             const { name, description, images, quantity, price, currency } = this.model.getData() || {};
             this.lblName.caption = name || "";
             this.imgProduct.url = images?.[0] || "";
+            if (images?.length > 1) {
+                for (let image of images) {
+                    const imageElm = this.addImage(image);
+                    if (!this.activeImage)
+                        this.selectImage(imageElm);
+                }
+                this.pnlImageListWrapper.visible = true;
+            }
             this.lblDescription.caption = description || "";
             this.lblStock.caption = quantity != null ? "Stock: " + quantity : "";
             this.lblStock.visible = quantity != null;
@@ -108,6 +126,9 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
         }
         clear() {
             this.lblName.caption = "";
+            this.pnlImageListWrapper.visible = false;
+            this.activeImage = undefined;
+            this.pnlImages.clearInnerHTML();
             this.imgProduct.url = "";
             this.lblDescription.caption = "";
             this.lblStock.caption = "";
@@ -115,6 +136,19 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
             this.iconPlus.enabled = false;
+        }
+        addImage(image) {
+            const imageElm = (this.$render("i-image", { display: "block", width: "100%", height: "auto", border: { radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, url: image, cursor: "pointer", onClick: this.selectImage.bind(this) }));
+            this.pnlImages.appendChild(imageElm);
+            return imageElm;
+        }
+        selectImage(target) {
+            if (this.activeImage) {
+                this.activeImage.classList.remove('active');
+            }
+            this.activeImage = target;
+            this.activeImage.classList.add('active');
+            this.imgProduct.url = target.url;
         }
         updateQuantity(isIncremental) {
             const productInfo = this.model.getData();
@@ -155,7 +189,9 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             return (this.$render("i-stack", { direction: "vertical", padding: { left: '1rem', right: '1rem', bottom: '2rem' }, lineHeight: 1.5 },
                 this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.875rem', weight: 700 }, padding: { top: '1rem', bottom: '2rem' } }),
                 this.$render("i-stack", { direction: "horizontal", width: "100%", gap: "1rem" },
-                    this.$render("i-panel", { width: "100%", maxWidth: "50%", stack: { grow: '1' }, padding: { right: '1rem' }, border: { right: { width: 1, style: 'solid', color: Theme.divider } } },
+                    this.$render("i-stack", { direction: "horizontal", width: "100%", maxWidth: "50%", stack: { grow: '1' }, padding: { right: '1rem' }, border: { right: { width: 1, style: 'solid', color: Theme.divider } } },
+                        this.$render("i-stack", { id: "pnlImageListWrapper", width: "35%", direction: "horizontal", justifyContent: "center", stack: { shrink: '0' }, visible: false },
+                            this.$render("i-stack", { id: "pnlImages", class: index_css_1.imageListStyle, direction: "vertical", width: "10%", minWidth: 86, margin: { top: '-0.5rem' }, alignItems: "center" })),
                         this.$render("i-image", { id: "imgProduct", display: "block", width: "100%", height: "auto", border: { radius: '0.75rem' }, overflow: "hidden" })),
                     this.$render("i-stack", { direction: "vertical", width: "100%", alignItems: "center", gap: "2rem" },
                         this.$render("i-label", { id: "lblDescription", class: "text-center", font: { size: '1.125rem' } }),

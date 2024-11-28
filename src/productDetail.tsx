@@ -7,9 +7,10 @@ import {
     Input,
     Label,
     Module,
+    StackLayout,
     Styles,
 } from '@ijstech/components';
-import { numberInputStyle } from './index.css';
+import { imageListStyle, numberInputStyle } from './index.css';
 import { ProductModel } from './model';
 
 const Theme = Styles.Theme.ThemeVars;
@@ -25,6 +26,8 @@ declare global {
 @customElements('i-scom-product--detail')
 export class ScomProductDetail extends Module {
     private lblName: Label;
+    private pnlImageListWrapper: StackLayout;
+    private pnlImages: StackLayout;
     private imgProduct: Image;
     private lblDescription: Label;
     private lblStock: Label;
@@ -33,6 +36,7 @@ export class ScomProductDetail extends Module {
     private iconMinus: Icon;
     private iconPlus: Icon;
     private btnAddToCart: Button;
+    private activeImage: Image;
     private _model: ProductModel;
 
     get model() {
@@ -48,9 +52,19 @@ export class ScomProductDetail extends Module {
     }
 
     show() {
+        this.pnlImageListWrapper.visible = false;
+        this.activeImage = undefined;
+        this.pnlImages.clearInnerHTML();
         const { name, description, images, quantity, price, currency } = this.model.getData() || {};
         this.lblName.caption = name || "";
         this.imgProduct.url = images?.[0] || "";
+        if (images?.length > 1) {
+            for (let image of images) {
+                const imageElm = this.addImage(image);
+                if (!this.activeImage) this.selectImage(imageElm);
+            }
+            this.pnlImageListWrapper.visible = true;
+        }
         this.lblDescription.caption = description || "";
         this.lblStock.caption = quantity != null ? "Stock: " + quantity : "";
         this.lblStock.visible = quantity != null;
@@ -62,6 +76,9 @@ export class ScomProductDetail extends Module {
 
     clear() {
         this.lblName.caption = "";
+        this.pnlImageListWrapper.visible = false;
+        this.activeImage = undefined;
+        this.pnlImages.clearInnerHTML();
         this.imgProduct.url = "";
         this.lblDescription.caption = "";
         this.lblStock.caption = "";
@@ -69,6 +86,32 @@ export class ScomProductDetail extends Module {
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
         this.iconPlus.enabled = false;
+    }
+
+    private addImage(image: string) {
+        const imageElm = (
+            <i-image
+                display="block"
+                width="100%"
+                height="auto"
+                border={{ radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }}
+                padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
+                url={image}
+                cursor="pointer"
+                onClick={this.selectImage.bind(this)}
+            ></i-image>
+        );
+        this.pnlImages.appendChild(imageElm);
+        return imageElm;
+    }
+
+    private selectImage(target: Image) {
+        if (this.activeImage) {
+            this.activeImage.classList.remove('active');
+        }
+        this.activeImage = target;
+        this.activeImage.classList.add('active');
+        this.imgProduct.url = target.url;
     }
 
     private updateQuantity(isIncremental: boolean) {
@@ -104,8 +147,8 @@ export class ScomProductDetail extends Module {
         this.iconPlus.enabled = productInfo.quantity == null || productInfo.quantity > 1;
     }
 
-    private handleAddToCart() {}
-    
+    private handleAddToCart() { }
+
     init() {
         super.init();
         this.updateQuantity = this.updateQuantity.bind(this);
@@ -125,13 +168,17 @@ export class ScomProductDetail extends Module {
                     padding={{ top: '1rem', bottom: '2rem' }}
                 />
                 <i-stack direction="horizontal" width="100%" gap="1rem">
-                    <i-panel
+                    <i-stack
+                        direction="horizontal"
                         width="100%"
                         maxWidth="50%"
                         stack={{ grow: '1' }}
                         padding={{ right: '1rem' }}
                         border={{ right: { width: 1, style: 'solid', color: Theme.divider } }}
                     >
+                        <i-stack id="pnlImageListWrapper" width="35%" direction="horizontal" justifyContent="center" stack={{ shrink: '0' }} visible={false}>
+                            <i-stack id="pnlImages" class={imageListStyle} direction="vertical" width="10%" minWidth={86} margin={{ top: '-0.5rem' }} alignItems="center"></i-stack>
+                        </i-stack>
                         <i-image
                             id="imgProduct"
                             display="block"
@@ -140,7 +187,7 @@ export class ScomProductDetail extends Module {
                             border={{ radius: '0.75rem' }}
                             overflow="hidden"
                         ></i-image>
-                    </i-panel>
+                    </i-stack>
                     <i-stack direction="vertical" width="100%" alignItems="center" gap="2rem">
                         <i-label id="lblDescription" class="text-center" font={{ size: '1.125rem' }}></i-label>
                         <i-stack direction="horizontal" justifyContent="center" gap="2rem">

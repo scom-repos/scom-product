@@ -72,6 +72,7 @@ export class ScomProduct extends Module {
                 {
                     maxWidth: '767px',
                     properties: {
+                        width: "100vw",
                         height: '100vh',
                         maxHeight: '100vh'
                     }

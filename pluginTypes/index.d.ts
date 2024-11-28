@@ -3,6 +3,7 @@ declare module "@scom/scom-product/index.css.ts" {
     export const imageStyle: string;
     export const cardStyle: string;
     export const numberInputStyle: string;
+    export const imageListStyle: string;
 }
 /// <amd-module name="@scom/scom-product/interface.ts" />
 declare module "@scom/scom-product/interface.ts" {
@@ -63,6 +64,8 @@ declare module "@scom/scom-product/productDetail.tsx" {
     }
     export class ScomProductDetail extends Module {
         private lblName;
+        private pnlImageListWrapper;
+        private pnlImages;
         private imgProduct;
         private lblDescription;
         private lblStock;
@@ -71,12 +74,15 @@ declare module "@scom/scom-product/productDetail.tsx" {
         private iconMinus;
         private iconPlus;
         private btnAddToCart;
+        private activeImage;
         private _model;
         get model(): ProductModel;
         set model(value: ProductModel);
         private get quantity();
         show(): void;
         clear(): void;
+        private addImage;
+        private selectImage;
         private updateQuantity;
         private increaseQuantity;
         private decreaseQuantity;

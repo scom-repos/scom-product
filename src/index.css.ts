@@ -30,3 +30,11 @@ export const numberInputStyle = Styles.style({
         }
     }
 })
+
+export const imageListStyle = Styles.style({
+    $nest: {
+        'i-image.active img': {
+            borderColor: Theme.colors.error.main
+        }
+    }
+})

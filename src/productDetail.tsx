@@ -98,6 +98,14 @@ export class ScomProductDetail extends Module {
                 padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
                 url={image}
                 cursor="pointer"
+                mediaQueries={[
+                    {
+                        maxWidth: '767px',
+                        properties: {
+                            stack: { grow: '1', shrink: '0', basis: '25%' }
+                        }
+                    }
+                ]}
                 onClick={this.selectImage.bind(this)}
             ></i-image>
         );
@@ -232,7 +240,8 @@ export class ScomProductDetail extends Module {
                                             width: '100%',
                                             minWidth: 'unset',
                                             margin: {},
-                                            padding: { top: '0.5rem' }
+                                            padding: { top: '0.5rem' },
+                                            overflow: { x: 'auto' }
                                         }
                                     }
                                 ]}

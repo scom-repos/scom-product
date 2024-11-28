@@ -138,7 +138,14 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.iconPlus.enabled = false;
         }
         addImage(image) {
-            const imageElm = (this.$render("i-image", { display: "block", width: "100%", height: "auto", border: { radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, url: image, cursor: "pointer", onClick: this.selectImage.bind(this) }));
+            const imageElm = (this.$render("i-image", { display: "block", width: "100%", height: "auto", border: { radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, url: image, cursor: "pointer", mediaQueries: [
+                    {
+                        maxWidth: '767px',
+                        properties: {
+                            stack: { grow: '1', shrink: '0', basis: '25%' }
+                        }
+                    }
+                ], onClick: this.selectImage.bind(this) }));
             this.pnlImages.appendChild(imageElm);
             return imageElm;
         }
@@ -224,7 +231,8 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                                             width: '100%',
                                             minWidth: 'unset',
                                             margin: {},
-                                            padding: { top: '0.5rem' }
+                                            padding: { top: '0.5rem' },
+                                            overflow: { x: 'auto' }
                                         }
                                     }
                                 ] })),

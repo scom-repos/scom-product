@@ -188,10 +188,46 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
         render() {
             return (this.$render("i-stack", { direction: "vertical", padding: { left: '1rem', right: '1rem', bottom: '2rem' }, lineHeight: 1.5 },
                 this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.875rem', weight: 700 }, padding: { top: '1rem', bottom: '2rem' } }),
-                this.$render("i-stack", { direction: "horizontal", width: "100%", gap: "1rem" },
-                    this.$render("i-stack", { direction: "horizontal", width: "100%", maxWidth: "50%", stack: { grow: '1' }, padding: { right: '1rem' }, border: { right: { width: 1, style: 'solid', color: Theme.divider } } },
-                        this.$render("i-stack", { id: "pnlImageListWrapper", width: "35%", direction: "horizontal", justifyContent: "center", stack: { shrink: '0' }, visible: false },
-                            this.$render("i-stack", { id: "pnlImages", class: index_css_1.imageListStyle, direction: "vertical", width: "10%", minWidth: 86, margin: { top: '-0.5rem' }, alignItems: "center" })),
+                this.$render("i-stack", { direction: "horizontal", width: "100%", gap: "1rem", mediaQueries: [
+                        {
+                            maxWidth: '767px',
+                            properties: {
+                                direction: "vertical",
+                            }
+                        }
+                    ] },
+                    this.$render("i-stack", { direction: "horizontal", width: "100%", maxWidth: "50%", stack: { grow: '1' }, padding: { right: '1rem' }, border: { right: { width: 1, style: 'solid', color: Theme.divider } }, mediaQueries: [
+                            {
+                                maxWidth: '767px',
+                                properties: {
+                                    maxWidth: '100%',
+                                    direction: "vertical",
+                                    reverse: true,
+                                    padding: { bottom: '1rem' },
+                                    border: { width: '0 0 1px 0', style: 'solid', color: Theme.divider }
+                                }
+                            }
+                        ] },
+                        this.$render("i-stack", { id: "pnlImageListWrapper", width: "35%", direction: "horizontal", justifyContent: "center", stack: { shrink: '0' }, visible: false, mediaQueries: [
+                                {
+                                    maxWidth: '767px',
+                                    properties: {
+                                        width: '100%',
+                                    }
+                                }
+                            ] },
+                            this.$render("i-stack", { id: "pnlImages", class: index_css_1.imageListStyle, direction: "vertical", width: "10%", minWidth: 86, margin: { top: '-0.5rem' }, alignItems: "center", mediaQueries: [
+                                    {
+                                        maxWidth: '767px',
+                                        properties: {
+                                            direction: "horizontal",
+                                            width: '100%',
+                                            minWidth: 'unset',
+                                            margin: {},
+                                            padding: { top: '0.5rem' }
+                                        }
+                                    }
+                                ] })),
                         this.$render("i-image", { id: "imgProduct", display: "block", width: "100%", height: "auto", border: { radius: '0.75rem' }, overflow: "hidden" })),
                     this.$render("i-stack", { direction: "vertical", width: "100%", alignItems: "center", gap: "2rem" },
                         this.$render("i-label", { id: "lblDescription", class: "text-center", font: { size: '1.125rem' } }),

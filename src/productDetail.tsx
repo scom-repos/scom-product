@@ -167,7 +167,19 @@ export class ScomProductDetail extends Module {
                     font={{ size: '1.875rem', weight: 700 }}
                     padding={{ top: '1rem', bottom: '2rem' }}
                 />
-                <i-stack direction="horizontal" width="100%" gap="1rem">
+                <i-stack
+                    direction="horizontal"
+                    width="100%"
+                    gap="1rem"
+                    mediaQueries={[
+                        {
+                            maxWidth: '767px',
+                            properties: {
+                                direction: "vertical",
+                            }
+                        }
+                    ]}
+                >
                     <i-stack
                         direction="horizontal"
                         width="100%"
@@ -175,9 +187,56 @@ export class ScomProductDetail extends Module {
                         stack={{ grow: '1' }}
                         padding={{ right: '1rem' }}
                         border={{ right: { width: 1, style: 'solid', color: Theme.divider } }}
+                        mediaQueries={[
+                            {
+                                maxWidth: '767px',
+                                properties: {
+                                    maxWidth: '100%',
+                                    direction: "vertical",
+                                    reverse: true,
+                                    padding: { bottom: '1rem' },
+                                    border: { width: '0 0 1px 0', style: 'solid', color: Theme.divider }
+                                }
+                            }
+                        ]}
                     >
-                        <i-stack id="pnlImageListWrapper" width="35%" direction="horizontal" justifyContent="center" stack={{ shrink: '0' }} visible={false}>
-                            <i-stack id="pnlImages" class={imageListStyle} direction="vertical" width="10%" minWidth={86} margin={{ top: '-0.5rem' }} alignItems="center"></i-stack>
+                        <i-stack
+                            id="pnlImageListWrapper"
+                            width="35%"
+                            direction="horizontal"
+                            justifyContent="center"
+                            stack={{ shrink: '0' }}
+                            visible={false}
+                            mediaQueries={[
+                                {
+                                    maxWidth: '767px',
+                                    properties: {
+                                        width: '100%',
+                                    }
+                                }
+                            ]}
+                        >
+                            <i-stack
+                                id="pnlImages"
+                                class={imageListStyle}
+                                direction="vertical"
+                                width="10%"
+                                minWidth={86}
+                                margin={{ top: '-0.5rem' }}
+                                alignItems="center"
+                                mediaQueries={[
+                                    {
+                                        maxWidth: '767px',
+                                        properties: {
+                                            direction: "horizontal",
+                                            width: '100%',
+                                            minWidth: 'unset',
+                                            margin: {},
+                                            padding: { top: '0.5rem' }
+                                        }
+                                    }
+                                ]}
+                            ></i-stack>
                         </i-stack>
                         <i-image
                             id="imgProduct"

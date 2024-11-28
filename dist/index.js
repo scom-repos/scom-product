@@ -251,6 +251,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                     {
                         maxWidth: '767px',
                         properties: {
+                            width: "100vw",
                             height: '100vh',
                             maxHeight: '100vh'
                         }

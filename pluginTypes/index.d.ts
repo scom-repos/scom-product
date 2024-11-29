@@ -130,6 +130,7 @@ declare module "@scom/scom-product/productDetail.tsx" {
         private pnlImages;
         private imgProduct;
         private lblDescription;
+        private pnlStock;
         private lblStock;
         private lblPrice;
         private edtQuantity;
@@ -154,6 +155,27 @@ declare module "@scom/scom-product/productDetail.tsx" {
         init(): void;
         render(): any;
     }
+}
+/// <amd-module name="@scom/scom-product/translations.json.ts" />
+declare module "@scom/scom-product/translations.json.ts" {
+    const _default_1: {
+        en: {
+            stock: string;
+            community: string;
+            product: string;
+        };
+        "zh-hant": {
+            stock: string;
+            community: string;
+            product: string;
+        };
+        vi: {
+            stock: string;
+            community: string;
+            product: string;
+        };
+    };
+    export default _default_1;
 }
 /// <amd-module name="@scom/scom-product" />
 declare module "@scom/scom-product" {

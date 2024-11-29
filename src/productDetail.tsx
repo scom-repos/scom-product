@@ -7,6 +7,7 @@ import {
     Input,
     Label,
     Module,
+    Panel,
     StackLayout,
     Styles,
 } from '@ijstech/components';
@@ -30,6 +31,7 @@ export class ScomProductDetail extends Module {
     private pnlImages: StackLayout;
     private imgProduct: Image;
     private lblDescription: Label;
+    private pnlStock: Panel;
     private lblStock: Label;
     private lblPrice: Label;
     private edtQuantity: Input;
@@ -75,8 +77,8 @@ export class ScomProductDetail extends Module {
         }
         this.lblDescription.caption = product?.description || "";
         const stockQuantity = this.getStockQuantity();
-        this.lblStock.caption = stockQuantity ? "Stock: " + stockQuantity : "";
-        this.lblStock.visible = !stockQuantity;
+        this.lblStock.caption = stockQuantity ? ": " + stockQuantity : "";
+        this.pnlStock.visible = stockQuantity > 1;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
@@ -91,6 +93,7 @@ export class ScomProductDetail extends Module {
         this.imgProduct.url = "";
         this.lblDescription.caption = "";
         this.lblStock.caption = "";
+        this.pnlStock.visible = false;
         this.lblPrice.caption = "";
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
@@ -268,7 +271,10 @@ export class ScomProductDetail extends Module {
                     <i-stack direction="vertical" width="100%" alignItems="center" gap="2rem">
                         <i-label id="lblDescription" class="text-center" font={{ size: '1.125rem' }}></i-label>
                         <i-stack direction="horizontal" justifyContent="center" gap="2rem">
-                            <i-label id="lblStock" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>
+                            <i-panel id="pnlStock" visible={false}>
+                                <i-label display="inline" caption="$stock" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>
+                                <i-label id="lblStock" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>
+                            </i-panel>
                             <i-label id="lblPrice" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>
                         </i-stack>
                         <i-stack direction="horizontal" justifyContent="center" gap="0.25rem">

@@ -92,7 +92,7 @@ export class ScomProductConfigInput extends Module {
                 <i-panel padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>
                     <i-stack direction="vertical" width="100%" justifyContent="center" gap={5}>
                         <i-stack direction="horizontal" width="100%" alignItems="center" gap={2}>
-                            <i-label caption="Product"></i-label>
+                            <i-label caption="$product"></i-label>
                         </i-stack>
                         <i-combo-box
                             id="comboProductId"

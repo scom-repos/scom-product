@@ -131,7 +131,7 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                 this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
                     this.$render("i-stack", { direction: "vertical", width: "100%", justifyContent: "center", gap: 5 },
                         this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
-                            this.$render("i-label", { caption: "Product" })),
+                            this.$render("i-label", { caption: "$product" })),
                         this.$render("i-combo-box", { id: "comboProductId", width: "100%", height: 42, icon: { name: 'caret-down' }, onChanged: this.handleProductIdChanged })))));
         }
     };
@@ -293,8 +293,8 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             }
             this.lblDescription.caption = product?.description || "";
             const stockQuantity = this.getStockQuantity();
-            this.lblStock.caption = stockQuantity ? "Stock: " + stockQuantity : "";
-            this.lblStock.visible = !stockQuantity;
+            this.lblStock.caption = stockQuantity ? ": " + stockQuantity : "";
+            this.pnlStock.visible = stockQuantity > 1;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
@@ -308,6 +308,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.imgProduct.url = "";
             this.lblDescription.caption = "";
             this.lblStock.caption = "";
+            this.pnlStock.visible = false;
             this.lblPrice.caption = "";
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
@@ -416,7 +417,9 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                     this.$render("i-stack", { direction: "vertical", width: "100%", alignItems: "center", gap: "2rem" },
                         this.$render("i-label", { id: "lblDescription", class: "text-center", font: { size: '1.125rem' } }),
                         this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "2rem" },
-                            this.$render("i-label", { id: "lblStock", font: { size: '1.5rem', color: Theme.text.secondary } }),
+                            this.$render("i-panel", { id: "pnlStock", visible: false },
+                                this.$render("i-label", { display: "inline", caption: "$stock", font: { size: '1.5rem', color: Theme.text.secondary } }),
+                                this.$render("i-label", { id: "lblStock", font: { size: '1.5rem', color: Theme.text.secondary } })),
                             this.$render("i-label", { id: "lblPrice", font: { size: '1.5rem', color: Theme.text.secondary } })),
                         this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "0.25rem" },
                             this.$render("i-icon", { id: "iconMinus", width: '1.875rem', height: '1.875rem', name: 'minus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.decreaseQuantity }),
@@ -430,7 +433,29 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
     ], ScomProductDetail);
     exports.ScomProductDetail = ScomProductDetail;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx"], function (require, exports, components_5, index_css_2, model_1, productDetail_1) {
+define("@scom/scom-product/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-product/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "stock": "Stock",
+            "community": "Community",
+            "product": "Product",
+        },
+        "zh-hant": {
+            "stock": "庫存",
+            "community": "社群",
+            "product": "產品",
+        },
+        "vi": {
+            "stock": "số lượng hàng tồn kho",
+            "community": "Cộng đồng",
+            "product": "Sản phẩm",
+        }
+    };
+});
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -483,6 +508,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             modal.refresh();
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             super.init();
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);

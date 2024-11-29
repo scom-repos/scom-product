@@ -10,6 +10,7 @@ import { cardStyle, imageStyle } from './index.css';
 import { IProductInfo } from './interface';
 import { ProductModel } from './model';
 import { ScomProductDetail } from './productDetail';
+import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -85,6 +86,7 @@ export class ScomProduct extends Module {
     }
 
     init() {
+        this.i18n.init({...translations});
         super.init();
         this.model = new ProductModel();
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);

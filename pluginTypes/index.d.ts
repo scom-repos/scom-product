@@ -7,26 +7,88 @@ declare module "@scom/scom-product/index.css.ts" {
 }
 /// <amd-module name="@scom/scom-product/interface.ts" />
 declare module "@scom/scom-product/interface.ts" {
-    export interface IShippingInfo {
-        id: string;
-        name?: string;
-        cost: number;
-        regions?: string[];
-    }
+    import { ICommunityProductInfo } from '@scom/scom-social-sdk';
     export interface IProductInfo {
-        id: string;
-        stallId: string;
-        name: string;
-        description?: string;
-        images?: string[];
-        currency: string;
-        price: number;
-        quantity: number;
-        specs?: string[][];
-        shipping?: IShippingInfo[];
-        communityUri?: string;
-        stallUri?: string;
+        config?: {
+            communityUri: string;
+            productId: string;
+        };
+        product?: ICommunityProductInfo;
     }
+}
+/// <amd-module name="@scom/scom-product/utils.ts" />
+declare module "@scom/scom-product/utils.ts" {
+    export function getCommunityBasicInfoFromUri(communityUri: string): {
+        creatorId: string;
+        communityId: string;
+    };
+    export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<any>;
+    export function fetchCommunityProducts(creatorId: string, communityId: string): Promise<any>;
+}
+/// <amd-module name="@scom/scom-product/configInput.tsx" />
+declare module "@scom/scom-product/configInput.tsx" {
+    import { ControlElement, Module } from '@ijstech/components';
+    interface IProductConfig {
+        communityUri?: string;
+        productId?: string;
+    }
+    global {
+        namespace JSX {
+            interface IntrinsicElements {
+                ['i-scom-product--config-input']: ControlElement;
+            }
+        }
+    }
+    export class ScomProductConfigInput extends Module {
+        private edtCommunityUri;
+        private comboProductId;
+        private timeout;
+        private products;
+        getData(): {
+            communityUri: any;
+            productId: string;
+        };
+        setData(data: IProductConfig): Promise<void>;
+        private fetchCommunityProducts;
+        private handleCommunityUriChanged;
+        private handleProductIdChanged;
+        init(): void;
+        render(): any;
+    }
+}
+/// <amd-module name="@scom/scom-product/formSchema.ts" />
+declare module "@scom/scom-product/formSchema.ts" {
+    import { ScomProductConfigInput } from "@scom/scom-product/configInput.tsx";
+    const _default: {
+        dataSchema: {
+            type: string;
+            properties: {
+                config: {
+                    title: string;
+                    type: string;
+                    required: boolean;
+                };
+            };
+        };
+        uiSchema: {
+            type: string;
+            elements: {
+                type: string;
+                scope: string;
+            }[];
+        };
+        customControls(): {
+            "#/properties/config": {
+                render: () => ScomProductConfigInput;
+                getData: (control: ScomProductConfigInput) => {
+                    communityUri: any;
+                    productId: string;
+                };
+                setData: (control: ScomProductConfigInput, value: string, rowData: any) => Promise<void>;
+            };
+        };
+    };
+    export default _default;
 }
 /// <amd-module name="@scom/scom-product/model.ts" />
 declare module "@scom/scom-product/model.ts" {

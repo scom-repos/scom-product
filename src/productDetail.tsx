@@ -55,23 +55,23 @@ export class ScomProductDetail extends Module {
         this.pnlImageListWrapper.visible = false;
         this.activeImage = undefined;
         this.pnlImages.clearInnerHTML();
-        const { name, description, images, quantity, price, currency } = this.model.getData() || {};
-        this.lblName.caption = name || "";
-        this.imgProduct.url = images?.[0] || "";
-        if (images?.length > 1) {
-            for (let image of images) {
+        const { product } = this.model.getData() || {};
+        this.lblName.caption = product?.name || "";
+        this.imgProduct.url = product?.images?.[0] || "";
+        if (product?.images?.length > 1) {
+            for (let image of product?.images) {
                 const imageElm = this.addImage(image);
                 if (!this.activeImage) this.selectImage(imageElm);
             }
             this.pnlImageListWrapper.visible = true;
         }
-        this.lblDescription.caption = description || "";
-        this.lblStock.caption = quantity != null ? "Stock: " + quantity : "";
-        this.lblStock.visible = quantity != null;
-        this.lblPrice.caption = `${price || ""} ${currency || ""}`;
+        this.lblDescription.caption = product?.description || "";
+        this.lblStock.caption = product?.quantity != null ? "Stock: " + product?.quantity : "";
+        this.lblStock.visible = product?.quantity != null;
+        this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
-        this.iconPlus.enabled = quantity == null || quantity > 1;
+        this.iconPlus.enabled = product?.quantity == null || product?.quantity > 1;
     }
 
     clear() {
@@ -123,10 +123,10 @@ export class ScomProductDetail extends Module {
     }
 
     private updateQuantity(isIncremental: boolean) {
-        const productInfo = this.model.getData();
+        const { product } = this.model.getData();
         let quantity = Number.isInteger(this.quantity) ? this.quantity : Math.trunc(this.quantity);
         if (isIncremental) {
-            if (productInfo.quantity == null || productInfo.quantity > quantity) {
+            if (product.quantity == null || product.quantity > quantity) {
                 this.edtQuantity.value = ++quantity;
             }
         } else {
@@ -135,7 +135,7 @@ export class ScomProductDetail extends Module {
             }
         }
         this.iconMinus.enabled = quantity > 1;
-        this.iconPlus.enabled = productInfo.quantity == null || productInfo.quantity > 1;
+        this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
     }
 
     private increaseQuantity() {
@@ -147,12 +147,12 @@ export class ScomProductDetail extends Module {
     }
 
     private handleQuantityChanged() {
-        const productInfo = this.model.getData();
+        const { product } = this.model.getData();
         if (!Number.isInteger(this.quantity)) {
             this.edtQuantity.value = Math.trunc(this.quantity);
         }
         this.iconMinus.enabled = this.quantity > 1;
-        this.iconPlus.enabled = productInfo.quantity == null || productInfo.quantity > 1;
+        this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
     }
 
     private handleAddToCart() { }

@@ -13,7 +13,8 @@
         "test": "cd test && npm run test && cd .."
     },
     "dependencies": {
-        "@ijstech/components": "^0.1.108"
+        "@ijstech/components": "^0.1.108",
+        "@scom/scom-social-sdk": "^0.1.60"
     },
     "devDependencies": {
         "@ijstech/cli": "^0.1.28",

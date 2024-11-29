@@ -47,16 +47,154 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-product/model.ts", ["require", "exports"], function (require, exports) {
+define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = void 0;
+    function getCommunityBasicInfoFromUri(communityUri) {
+        const parts = communityUri.split('/');
+        return {
+            creatorId: parts[1],
+            communityId: parts[0]
+        };
+    }
+    exports.getCommunityBasicInfoFromUri = getCommunityBasicInfoFromUri;
+    async function fetchCommunityStalls(creatorId, communityId) {
+        const dataManager = components_2.application.store?.mainDataManager;
+        const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
+        return stalls;
+    }
+    exports.fetchCommunityStalls = fetchCommunityStalls;
+    async function fetchCommunityProducts(creatorId, communityId) {
+        const dataManager = components_2.application.store?.mainDataManager;
+        const products = await dataManager.fetchCommunityProducts(creatorId, communityId);
+        return products;
+    }
+    exports.fetchCommunityProducts = fetchCommunityProducts;
+});
+define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/utils.ts"], function (require, exports, components_3, utils_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ScomProductConfigInput = void 0;
+    const Theme = components_3.Styles.Theme.ThemeVars;
+    let ScomProductConfigInput = class ScomProductConfigInput extends components_3.Module {
+        constructor() {
+            super(...arguments);
+            this.products = [];
+        }
+        getData() {
+            return {
+                communityUri: this.edtCommunityUri?.value || "",
+                productId: this.comboProductId?.selectedItem?.value || ""
+            };
+        }
+        async setData(data) {
+            if (this.edtCommunityUri) {
+                this.edtCommunityUri.value = data.communityUri || "";
+                if (data.communityUri) {
+                    await this.fetchCommunityProducts(data.communityUri);
+                    this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
+                }
+            }
+        }
+        async fetchCommunityProducts(communityUri) {
+            const { creatorId, communityId } = (0, utils_1.getCommunityBasicInfoFromUri)(communityUri);
+            this.products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId);
+            this.comboProductId.items = this.products.map(product => ({
+                label: product.name || product.id,
+                value: product.id
+            }));
+        }
+        handleCommunityUriChanged() {
+            if (this['onChanged'])
+                this['onChanged']();
+            if (this.timeout)
+                clearTimeout(this.timeout);
+            const communityUri = this.edtCommunityUri.value;
+            this.comboProductId.items = [];
+            this.comboProductId.selectedItem = undefined;
+            if (!communityUri.includes('/npub'))
+                return;
+            this.timeout = setTimeout(() => this.fetchCommunityProducts(communityUri), 500);
+        }
+        handleProductIdChanged() {
+            if (this['onChanged'])
+                this['onChanged']();
+        }
+        init() {
+            super.init();
+            this.fetchCommunityProducts = this.fetchCommunityProducts.bind(this);
+        }
+        render() {
+            return (this.$render("i-stack", { direction: "vertical" },
+                this.$render("i-input", { id: "edtCommunityUri", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "Community Id/Creator's npub", onChanged: this.handleCommunityUriChanged }),
+                this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
+                    this.$render("i-stack", { direction: "vertical", width: "100%", justifyContent: "center", gap: 5 },
+                        this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
+                            this.$render("i-label", { caption: "Product" })),
+                        this.$render("i-combo-box", { id: "comboProductId", width: "100%", height: 42, icon: { name: 'caret-down' }, onChanged: this.handleProductIdChanged })))));
+        }
+    };
+    ScomProductConfigInput = __decorate([
+        (0, components_3.customElements)('i-scom-product--config-input')
+    ], ScomProductConfigInput);
+    exports.ScomProductConfigInput = ScomProductConfigInput;
+});
+define("@scom/scom-product/formSchema.ts", ["require", "exports", "@scom/scom-product/configInput.tsx"], function (require, exports, configInput_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = {
+        dataSchema: {
+            type: 'object',
+            properties: {
+                config: {
+                    title: 'Community',
+                    type: "object",
+                    required: true
+                }
+            }
+        },
+        uiSchema: {
+            type: "VerticalLayout",
+            elements: [
+                {
+                    type: "Control",
+                    scope: "#/properties/config"
+                },
+            ]
+        },
+        customControls() {
+            return {
+                "#/properties/config": {
+                    render: () => {
+                        const communityProductInput = new configInput_1.ScomProductConfigInput();
+                        return communityProductInput;
+                    },
+                    getData: (control) => {
+                        return control.getData();
+                    },
+                    setData: async (control, value, rowData) => {
+                        await control.ready();
+                        control.setData(rowData?.config);
+                    }
+                }
+            };
+        }
+    };
+});
+define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product/formSchema.ts", "@scom/scom-product/utils.ts"], function (require, exports, formSchema_1, utils_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ProductModel = void 0;
     class ProductModel {
+        constructor() {
+            this._data = {};
+        }
         getConfigurators() {
             return [
                 {
-                    name: 'Builder Configurator',
-                    target: 'Builders',
+                    name: 'Editor',
+                    target: 'Editor',
                     getActions: this.getActions.bind(this),
                     getData: this.getData.bind(this),
                     setData: this.setData.bind(this),
@@ -67,6 +205,12 @@ define("@scom/scom-product/model.ts", ["require", "exports"], function (require,
         }
         async setData(value) {
             this._data = value;
+            const { config, product } = this._data || {};
+            if (!product && config) {
+                const { creatorId, communityId } = (0, utils_2.getCommunityBasicInfoFromUri)(config.communityUri);
+                const products = await (0, utils_2.fetchCommunityProducts)(creatorId, communityId);
+                this._data.product = products?.find(product => product.id === config.productId);
+            }
             if (this.updateUIBySetData)
                 this.updateUIBySetData();
         }
@@ -80,18 +224,42 @@ define("@scom/scom-product/model.ts", ["require", "exports"], function (require,
             this._tag = value;
         }
         getActions() {
-            const actions = [];
+            const actions = [
+                {
+                    name: 'Edit',
+                    icon: 'edit',
+                    command: (builder, userInputData) => {
+                        let oldData = {};
+                        return {
+                            execute: () => {
+                                oldData = JSON.parse(JSON.stringify(this._data));
+                                if (builder?.setData)
+                                    builder.setData(userInputData);
+                            },
+                            undo: () => {
+                                this._data = JSON.parse(JSON.stringify(oldData));
+                                if (builder?.setData)
+                                    builder.setData(this._data);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: formSchema_1.default.dataSchema,
+                    userInputUISchema: formSchema_1.default.uiSchema,
+                    customControls: formSchema_1.default.customControls()
+                }
+            ];
             return actions;
         }
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts"], function (require, exports, components_2, index_css_1) {
+define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts"], function (require, exports, components_4, index_css_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProductDetail = void 0;
-    const Theme = components_2.Styles.Theme.ThemeVars;
-    let ScomProductDetail = class ScomProductDetail extends components_2.Module {
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomProductDetail = class ScomProductDetail extends components_4.Module {
         get model() {
             return this._model;
         }
@@ -105,24 +273,24 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.pnlImageListWrapper.visible = false;
             this.activeImage = undefined;
             this.pnlImages.clearInnerHTML();
-            const { name, description, images, quantity, price, currency } = this.model.getData() || {};
-            this.lblName.caption = name || "";
-            this.imgProduct.url = images?.[0] || "";
-            if (images?.length > 1) {
-                for (let image of images) {
+            const { product } = this.model.getData() || {};
+            this.lblName.caption = product?.name || "";
+            this.imgProduct.url = product?.images?.[0] || "";
+            if (product?.images?.length > 1) {
+                for (let image of product?.images) {
                     const imageElm = this.addImage(image);
                     if (!this.activeImage)
                         this.selectImage(imageElm);
                 }
                 this.pnlImageListWrapper.visible = true;
             }
-            this.lblDescription.caption = description || "";
-            this.lblStock.caption = quantity != null ? "Stock: " + quantity : "";
-            this.lblStock.visible = quantity != null;
-            this.lblPrice.caption = `${price || ""} ${currency || ""}`;
+            this.lblDescription.caption = product?.description || "";
+            this.lblStock.caption = product?.quantity != null ? "Stock: " + product?.quantity : "";
+            this.lblStock.visible = product?.quantity != null;
+            this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
-            this.iconPlus.enabled = quantity == null || quantity > 1;
+            this.iconPlus.enabled = product?.quantity == null || product?.quantity > 1;
         }
         clear() {
             this.lblName.caption = "";
@@ -158,10 +326,10 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.imgProduct.url = target.url;
         }
         updateQuantity(isIncremental) {
-            const productInfo = this.model.getData();
+            const { product } = this.model.getData();
             let quantity = Number.isInteger(this.quantity) ? this.quantity : Math.trunc(this.quantity);
             if (isIncremental) {
-                if (productInfo.quantity == null || productInfo.quantity > quantity) {
+                if (product.quantity == null || product.quantity > quantity) {
                     this.edtQuantity.value = ++quantity;
                 }
             }
@@ -171,7 +339,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 }
             }
             this.iconMinus.enabled = quantity > 1;
-            this.iconPlus.enabled = productInfo.quantity == null || productInfo.quantity > 1;
+            this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
         }
         increaseQuantity() {
             this.updateQuantity(true);
@@ -180,12 +348,12 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.updateQuantity(false);
         }
         handleQuantityChanged() {
-            const productInfo = this.model.getData();
+            const { product } = this.model.getData();
             if (!Number.isInteger(this.quantity)) {
                 this.edtQuantity.value = Math.trunc(this.quantity);
             }
             this.iconMinus.enabled = this.quantity > 1;
-            this.iconPlus.enabled = productInfo.quantity == null || productInfo.quantity > 1;
+            this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
         }
         handleAddToCart() { }
         init() {
@@ -250,16 +418,16 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
         }
     };
     ScomProductDetail = __decorate([
-        (0, components_2.customElements)('i-scom-product--detail')
+        (0, components_4.customElements)('i-scom-product--detail')
     ], ScomProductDetail);
     exports.ScomProductDetail = ScomProductDetail;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx"], function (require, exports, components_3, index_css_2, model_1, productDetail_1) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx"], function (require, exports, components_5, index_css_2, model_1, productDetail_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
-    const Theme = components_3.Styles.Theme.ThemeVars;
-    let ScomProduct = class ScomProduct extends components_3.Module {
+    const Theme = components_5.Styles.Theme.ThemeVars;
+    let ScomProduct = class ScomProduct extends components_5.Module {
         getConfigurators() {
             return this.model.getConfigurators();
         }
@@ -276,10 +444,10 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.model.setTag(value);
         }
         async updateUIBySetData() {
-            const { images, name, price, currency } = this.getData() || {};
-            this.imgProduct.url = images?.[0] || "";
-            this.lblName.caption = name || "";
-            this.lblPrice.caption = `${price || ""} ${currency || ""}`;
+            const { product } = this.getData() || {};
+            this.imgProduct.url = product?.images?.[0] || "";
+            this.lblName.caption = product?.name || "";
+            this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         }
         async handleProductClick() {
             if (!this.detailModule) {
@@ -323,7 +491,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         }
     };
     ScomProduct = __decorate([
-        (0, components_3.customElements)('i-scom-product')
+        (0, components_5.customElements)('i-scom-product')
     ], ScomProduct);
     exports.ScomProduct = ScomProduct;
 });

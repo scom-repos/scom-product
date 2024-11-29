@@ -1,16 +1,17 @@
-import { Module } from "@ijstech/components";
+import formSchema from "./formSchema";
 import { IProductInfo } from "./interface";
+import { fetchCommunityProducts, getCommunityBasicInfoFromUri } from "./utils";
 
 export class ProductModel {
-    private _data: IProductInfo;
+    private _data: IProductInfo = {};
     private _tag: any;
     public updateUIBySetData: () => Promise<void>;
 
     getConfigurators() {
         return [
             {
-                name: 'Builder Configurator',
-                target: 'Builders',
+                name: 'Editor',
+                target: 'Editor',
                 getActions: this.getActions.bind(this),
                 getData: this.getData.bind(this),
                 setData: this.setData.bind(this),
@@ -22,6 +23,12 @@ export class ProductModel {
 
     async setData(value: IProductInfo) {
         this._data = value;
+        const { config, product } = this._data || {};
+        if (!product && config) {
+            const { creatorId, communityId } = getCommunityBasicInfoFromUri(config.communityUri);
+            const products = await fetchCommunityProducts(creatorId, communityId);
+            this._data.product = products?.find(product => product.id === config.productId);
+        }
         if (this.updateUIBySetData) this.updateUIBySetData();
     }
 
@@ -38,7 +45,29 @@ export class ProductModel {
     }
 
     private getActions() {
-        const actions = [];
+        const actions = [
+          {
+            name: 'Edit',
+            icon: 'edit',
+            command: (builder: any, userInputData: any) => {
+              let oldData: IProductInfo = {};
+              return {
+                execute: () => {
+                  oldData = JSON.parse(JSON.stringify(this._data));
+                  if (builder?.setData) builder.setData(userInputData);
+                },
+                undo: () => {
+                    this._data = JSON.parse(JSON.stringify(oldData));
+                  if (builder?.setData) builder.setData(this._data);
+                },
+                redo: () => { }
+              }
+            },
+            userInputDataSchema: formSchema.dataSchema,
+            userInputUISchema: formSchema.uiSchema,
+            customControls: formSchema.customControls()
+          }
+        ]
         return actions;
     }
 }

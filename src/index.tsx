@@ -52,10 +52,10 @@ export class ScomProduct extends Module {
     }
 
     private async updateUIBySetData() {
-        const { images, name, price, currency } = this.getData() || {};
-        this.imgProduct.url = images?.[0] || "";
-        this.lblName.caption = name || "";
-        this.lblPrice.caption = `${price || ""} ${currency || ""}`;
+        const { product } = this.getData() || {};
+        this.imgProduct.url = product?.images?.[0] || "";
+        this.lblName.caption = product?.name || "";
+        this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
     }
 
     private async handleProductClick() {

@@ -93,6 +93,7 @@ export class ScomProductConfigInput extends Module {
                     <i-stack direction="vertical" width="100%" justifyContent="center" gap={5}>
                         <i-stack direction="horizontal" width="100%" alignItems="center" gap={2}>
                             <i-label caption="$product"></i-label>
+                            <i-label caption=" *" font={{ color: Theme.colors.error.main }}></i-label>
                         </i-stack>
                         <i-combo-box
                             id="comboProductId"

@@ -12,7 +12,7 @@ declare module "@scom/scom-product/interface.ts" {
     export interface IProductInfo {
         config?: {
             communityUri: string;
-            productId: string;
+            productId?: string;
         };
         product?: ICommunityProductInfo;
     }

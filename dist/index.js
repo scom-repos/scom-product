@@ -89,9 +89,13 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             this.products = [];
         }
         getData() {
+            const communityUri = this.edtCommunityUri?.value || "";
+            const productId = this.comboProductId?.selectedItem?.value || "";
+            if (!communityUri && productId)
+                return;
             return {
-                communityUri: this.edtCommunityUri?.value || "",
-                productId: this.comboProductId?.selectedItem?.value || ""
+                communityUri: communityUri,
+                productId: productId
             };
         }
         async setData(data) {
@@ -138,7 +142,7 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                     this.$render("i-stack", { direction: "vertical", width: "100%", justifyContent: "center", gap: 5 },
                         this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
                             this.$render("i-label", { caption: "$product" })),
-                        this.$render("i-combo-box", { id: "comboProductId", width: "100%", height: 42, icon: { name: 'caret-down' }, onChanged: this.handleProductIdChanged })))));
+                        this.$render("i-combo-box", { id: "comboProductId", width: "100%", height: 42, icon: { name: 'caret-down' }, border: { radius: '0.625rem' }, onChanged: this.handleProductIdChanged })))));
         }
     };
     ScomProductConfigInput = __decorate([

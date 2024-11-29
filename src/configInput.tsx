@@ -99,6 +99,7 @@ export class ScomProductConfigInput extends Module {
                             width="100%"
                             height={42}
                             icon={{ name: 'caret-down' }}
+                            border={{ radius: '0.625rem' }}
                             onChanged={this.handleProductIdChanged}
                         ></i-combo-box>
                     </i-stack>

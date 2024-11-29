@@ -1,3 +1,4 @@
+/// <reference path="@scom/scom-social-sdk/index.d.ts" />
 /// <amd-module name="@scom/scom-product/index.css.ts" />
 declare module "@scom/scom-product/index.css.ts" {
     export const imageStyle: string;
@@ -18,10 +19,11 @@ declare module "@scom/scom-product/interface.ts" {
 }
 /// <amd-module name="@scom/scom-product/utils.ts" />
 declare module "@scom/scom-product/utils.ts" {
-    export function getCommunityBasicInfoFromUri(communityUri: string): {
+    export function extractCommunityUri(communityUri: string): {
         creatorId: string;
         communityId: string;
     };
+    export function getCommunityBasicInfoFromUri(communityUri: string): import("@scom/scom-social-sdk").ICommunityBasicInfo;
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<any>;
     export function fetchCommunityProducts(creatorId: string, communityId: string): Promise<any>;
 }
@@ -139,6 +141,7 @@ declare module "@scom/scom-product/productDetail.tsx" {
         private btnAddToCart;
         private activeImage;
         private _model;
+        onProductAdded: () => void;
         get model(): ProductModel;
         set model(value: ProductModel);
         private get quantity();

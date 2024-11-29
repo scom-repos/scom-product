@@ -11,8 +11,10 @@ import {
     StackLayout,
     Styles,
 } from '@ijstech/components';
+import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { imageListStyle, numberInputStyle } from './index.css';
 import { ProductModel } from './model';
+import { getCommunityBasicInfoFromUri } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -40,6 +42,7 @@ export class ScomProductDetail extends Module {
     private btnAddToCart: Button;
     private activeImage: Image;
     private _model: ProductModel;
+    public onProductAdded: () => void;
 
     get model() {
         return this._model;
@@ -83,6 +86,8 @@ export class ScomProductDetail extends Module {
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
         this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
+        const logginedUserStr = localStorage.getItem('loggedInUser');
+        this.btnAddToCart.enabled = !!logginedUserStr;
     }
 
     clear() {
@@ -98,6 +103,7 @@ export class ScomProductDetail extends Module {
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
         this.iconPlus.enabled = false;
+        this.btnAddToCart.enabled = false;
     }
 
     private addImage(image: string) {
@@ -167,7 +173,36 @@ export class ScomProductDetail extends Module {
         this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
     }
 
-    private handleAddToCart() { }
+    private handleAddToCart() {
+        const logginedUserStr = localStorage.getItem('loggedInUser');
+        if (!logginedUserStr) return;
+        const logginedUser = JSON.parse(logginedUserStr);
+        const { product } = this.model.getData() || {};
+        const { creatorId, communityId } = getCommunityBasicInfoFromUri(product.communityUri);
+        const key = `shoppingCart/${logginedUser.id}/${creatorId}/${communityId}`;
+        const productStr = localStorage.getItem(key);
+        if (!productStr) {
+            localStorage.setItem(key, JSON.stringify([{
+                ...product,
+                quantity: this.quantity,
+                available: product.quantity
+            }]));
+        } else {
+            const products = JSON.parse(productStr) || [];
+            const selectedProduct = products.find(p => p.id === product.id);
+            if (selectedProduct) {
+                selectedProduct.quantity += this.quantity;
+            } else {
+                products.push({
+                    ...product,
+                    quantity: this.quantity,
+                    available: product.quantity
+                });
+            }
+            localStorage.setItem(key, JSON.stringify(products));
+        }
+        if (this.onProductAdded) this.onProductAdded();
+    }
 
     init() {
         super.init();
@@ -323,6 +358,7 @@ export class ScomProductDetail extends Module {
                             border={{ radius: 18 }}
                             padding={{ top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }}
                             font={{ color: Theme.colors.primary.contrastText, bold: true }}
+                            enabled={false}
                             onClick={this.handleAddToCart}
                         ></i-button>
                     </i-stack>

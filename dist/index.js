@@ -47,16 +47,22 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk"], function (require, exports, components_2, scom_social_sdk_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = void 0;
-    function getCommunityBasicInfoFromUri(communityUri) {
+    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = exports.extractCommunityUri = void 0;
+    function extractCommunityUri(communityUri) {
         const parts = communityUri.split('/');
         return {
             creatorId: parts[1],
             communityId: parts[0]
         };
+    }
+    exports.extractCommunityUri = extractCommunityUri;
+    function getCommunityBasicInfoFromUri(communityUri) {
+        const info = scom_social_sdk_1.SocialUtilsManager.getCommunityBasicInfoFromUri(communityUri);
+        info.creatorId = scom_social_sdk_1.Nip19.npubEncode(info.creatorId);
+        return info;
     }
     exports.getCommunityBasicInfoFromUri = getCommunityBasicInfoFromUri;
     async function fetchCommunityStalls(creatorId, communityId) {
@@ -98,7 +104,7 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             }
         }
         async fetchCommunityProducts(communityUri) {
-            const { creatorId, communityId } = (0, utils_1.getCommunityBasicInfoFromUri)(communityUri);
+            const { creatorId, communityId } = (0, utils_1.extractCommunityUri)(communityUri);
             this.products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId);
             this.comboProductId.items = this.products.map(product => ({
                 label: product.name || product.id,
@@ -207,7 +213,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
             this._data = value;
             const { config, product } = this._data || {};
             if (!product && config) {
-                const { creatorId, communityId } = (0, utils_2.getCommunityBasicInfoFromUri)(config.communityUri);
+                const { creatorId, communityId } = (0, utils_2.extractCommunityUri)(config.communityUri);
                 const products = await (0, utils_2.fetchCommunityProducts)(creatorId, communityId);
                 this._data.product = products?.find(product => product.id === config.productId);
             }
@@ -254,7 +260,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts"], function (require, exports, components_4, index_css_1) {
+define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, index_css_1, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProductDetail = void 0;
@@ -299,6 +305,8 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
             this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
+            const logginedUserStr = localStorage.getItem('loggedInUser');
+            this.btnAddToCart.enabled = !!logginedUserStr;
         }
         clear() {
             this.lblName.caption = "";
@@ -313,6 +321,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
             this.iconPlus.enabled = false;
+            this.btnAddToCart.enabled = false;
         }
         addImage(image) {
             const imageElm = (this.$render("i-image", { display: "block", width: "100%", height: "auto", border: { radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, url: image, cursor: "pointer", mediaQueries: [
@@ -364,7 +373,40 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.iconMinus.enabled = this.quantity > 1;
             this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         }
-        handleAddToCart() { }
+        handleAddToCart() {
+            const logginedUserStr = localStorage.getItem('loggedInUser');
+            if (!logginedUserStr)
+                return;
+            const logginedUser = JSON.parse(logginedUserStr);
+            const { product } = this.model.getData() || {};
+            const { creatorId, communityId } = (0, utils_3.getCommunityBasicInfoFromUri)(product.communityUri);
+            const key = `shoppingCart/${logginedUser.id}/${creatorId}/${communityId}`;
+            const productStr = localStorage.getItem(key);
+            if (!productStr) {
+                localStorage.setItem(key, JSON.stringify([{
+                        ...product,
+                        quantity: this.quantity,
+                        available: product.quantity
+                    }]));
+            }
+            else {
+                const products = JSON.parse(productStr) || [];
+                const selectedProduct = products.find(p => p.id === product.id);
+                if (selectedProduct) {
+                    selectedProduct.quantity += this.quantity;
+                }
+                else {
+                    products.push({
+                        ...product,
+                        quantity: this.quantity,
+                        available: product.quantity
+                    });
+                }
+                localStorage.setItem(key, JSON.stringify(products));
+            }
+            if (this.onProductAdded)
+                this.onProductAdded();
+        }
         init() {
             super.init();
             this.updateQuantity = this.updateQuantity.bind(this);
@@ -425,7 +467,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                             this.$render("i-icon", { id: "iconMinus", width: '1.875rem', height: '1.875rem', name: 'minus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.decreaseQuantity }),
                             this.$render("i-input", { id: "edtQuantity", class: index_css_1.numberInputStyle, width: 100, height: '2rem', inputType: "number", padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, onChanged: this.handleQuantityChanged }),
                             this.$render("i-icon", { id: "iconPlus", width: '1.875rem', height: '1.875rem', name: 'plus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.increaseQuantity })),
-                        this.$render("i-button", { id: "btnAddToCart", minHeight: 36, minWidth: 120, caption: "Add to Cart", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart })))));
+                        this.$render("i-button", { id: "btnAddToCart", minHeight: 36, minWidth: 120, caption: "Add to Cart", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, enabled: false, onClick: this.handleAddToCart })))));
         }
     };
     ScomProductDetail = __decorate([
@@ -486,6 +528,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             if (!this.detailModule) {
                 this.detailModule = new productDetail_1.ScomProductDetail();
                 this.detailModule.model = this.model;
+                this.detailModule.onProductAdded = () => {
+                    this.detailModule.closeModal();
+                };
             }
             const modal = this.detailModule.openModal({
                 width: "90vw",

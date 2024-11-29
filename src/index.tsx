@@ -63,6 +63,9 @@ export class ScomProduct extends Module {
         if (!this.detailModule) {
             this.detailModule = new ScomProductDetail();
             this.detailModule.model = this.model;
+            this.detailModule.onProductAdded = () => {
+                this.detailModule.closeModal();
+            }
         }
         const modal = this.detailModule.openModal({
             width: "90vw",

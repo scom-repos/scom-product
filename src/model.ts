@@ -1,6 +1,6 @@
 import formSchema from "./formSchema";
 import { IProductInfo } from "./interface";
-import { fetchCommunityProducts, getCommunityBasicInfoFromUri } from "./utils";
+import { fetchCommunityProducts, extractCommunityUri } from "./utils";
 
 export class ProductModel {
     private _data: IProductInfo = {};
@@ -25,7 +25,7 @@ export class ProductModel {
         this._data = value;
         const { config, product } = this._data || {};
         if (!product && config) {
-            const { creatorId, communityId } = getCommunityBasicInfoFromUri(config.communityUri);
+            const { creatorId, communityId } = extractCommunityUri(config.communityUri);
             const products = await fetchCommunityProducts(creatorId, communityId);
             this._data.product = products?.find(product => product.id === config.productId);
         }

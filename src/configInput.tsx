@@ -8,7 +8,7 @@ import {
     application,
 } from '@ijstech/components';
 import { ICommunityProductInfo, SocialDataManager } from '@scom/scom-social-sdk';
-import { fetchCommunityProducts, getCommunityBasicInfoFromUri } from './utils';
+import { fetchCommunityProducts, extractCommunityUri } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -50,7 +50,7 @@ export class ScomProductConfigInput extends Module {
     }
 
     private async fetchCommunityProducts(communityUri: string) {
-        const { creatorId, communityId } = getCommunityBasicInfoFromUri(communityUri);
+        const { creatorId, communityId } = extractCommunityUri(communityUri);
         this.products = await fetchCommunityProducts(creatorId, communityId);
         this.comboProductId.items = this.products.map(product => ({
             label: product.name || product.id,

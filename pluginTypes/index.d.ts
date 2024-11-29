@@ -141,6 +141,7 @@ declare module "@scom/scom-product/productDetail.tsx" {
         get model(): ProductModel;
         set model(value: ProductModel);
         private get quantity();
+        private getStockQuantity;
         show(): void;
         clear(): void;
         private addImage;

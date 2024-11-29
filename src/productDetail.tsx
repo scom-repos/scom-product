@@ -51,6 +51,14 @@ export class ScomProductDetail extends Module {
         return Number(this.edtQuantity.value) || 1;
     }
 
+    private getStockQuantity() {
+        const { product } = this.model.getData() || {};
+        if (product?.quantity != null && product?.quantity.toString() != "" && product?.quantity >= 0) {
+            return Number(product?.quantity);
+        }
+        return null;
+    }
+
     show() {
         this.pnlImageListWrapper.visible = false;
         this.activeImage = undefined;
@@ -66,12 +74,13 @@ export class ScomProductDetail extends Module {
             this.pnlImageListWrapper.visible = true;
         }
         this.lblDescription.caption = product?.description || "";
-        this.lblStock.caption = product?.quantity != null ? "Stock: " + product?.quantity : "";
-        this.lblStock.visible = product?.quantity != null;
+        const stockQuantity = this.getStockQuantity();
+        this.lblStock.caption = stockQuantity ? "Stock: " + stockQuantity : "";
+        this.lblStock.visible = !stockQuantity;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.edtQuantity.value = 1;
         this.iconMinus.enabled = false;
-        this.iconPlus.enabled = product?.quantity == null || product?.quantity > 1;
+        this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
     }
 
     clear() {
@@ -123,10 +132,10 @@ export class ScomProductDetail extends Module {
     }
 
     private updateQuantity(isIncremental: boolean) {
-        const { product } = this.model.getData();
         let quantity = Number.isInteger(this.quantity) ? this.quantity : Math.trunc(this.quantity);
+        const stockQuantity = this.getStockQuantity();
         if (isIncremental) {
-            if (product.quantity == null || product.quantity > quantity) {
+            if (stockQuantity == null || stockQuantity > quantity) {
                 this.edtQuantity.value = ++quantity;
             }
         } else {
@@ -135,7 +144,7 @@ export class ScomProductDetail extends Module {
             }
         }
         this.iconMinus.enabled = quantity > 1;
-        this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
+        this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
     }
 
     private increaseQuantity() {
@@ -147,12 +156,12 @@ export class ScomProductDetail extends Module {
     }
 
     private handleQuantityChanged() {
-        const { product } = this.model.getData();
+        const stockQuantity = this.getStockQuantity();
         if (!Number.isInteger(this.quantity)) {
             this.edtQuantity.value = Math.trunc(this.quantity);
         }
         this.iconMinus.enabled = this.quantity > 1;
-        this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
+        this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
     }
 
     private handleAddToCart() { }

@@ -269,6 +269,13 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
         get quantity() {
             return Number(this.edtQuantity.value) || 1;
         }
+        getStockQuantity() {
+            const { product } = this.model.getData() || {};
+            if (product?.quantity != null && product?.quantity.toString() != "" && product?.quantity >= 0) {
+                return Number(product?.quantity);
+            }
+            return null;
+        }
         show() {
             this.pnlImageListWrapper.visible = false;
             this.activeImage = undefined;
@@ -285,12 +292,13 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 this.pnlImageListWrapper.visible = true;
             }
             this.lblDescription.caption = product?.description || "";
-            this.lblStock.caption = product?.quantity != null ? "Stock: " + product?.quantity : "";
-            this.lblStock.visible = product?.quantity != null;
+            const stockQuantity = this.getStockQuantity();
+            this.lblStock.caption = stockQuantity ? "Stock: " + stockQuantity : "";
+            this.lblStock.visible = !stockQuantity;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.edtQuantity.value = 1;
             this.iconMinus.enabled = false;
-            this.iconPlus.enabled = product?.quantity == null || product?.quantity > 1;
+            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         }
         clear() {
             this.lblName.caption = "";
@@ -326,10 +334,10 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.imgProduct.url = target.url;
         }
         updateQuantity(isIncremental) {
-            const { product } = this.model.getData();
             let quantity = Number.isInteger(this.quantity) ? this.quantity : Math.trunc(this.quantity);
+            const stockQuantity = this.getStockQuantity();
             if (isIncremental) {
-                if (product.quantity == null || product.quantity > quantity) {
+                if (stockQuantity == null || stockQuantity > quantity) {
                     this.edtQuantity.value = ++quantity;
                 }
             }
@@ -339,7 +347,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 }
             }
             this.iconMinus.enabled = quantity > 1;
-            this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
+            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         }
         increaseQuantity() {
             this.updateQuantity(true);
@@ -348,12 +356,12 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.updateQuantity(false);
         }
         handleQuantityChanged() {
-            const { product } = this.model.getData();
+            const stockQuantity = this.getStockQuantity();
             if (!Number.isInteger(this.quantity)) {
                 this.edtQuantity.value = Math.trunc(this.quantity);
             }
             this.iconMinus.enabled = this.quantity > 1;
-            this.iconPlus.enabled = product.quantity == null || product.quantity > 1;
+            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         }
         handleAddToCart() { }
         init() {

@@ -9,31 +9,27 @@ declare module "@scom/scom-product/index.css.ts" {
 /// <amd-module name="@scom/scom-product/interface.ts" />
 declare module "@scom/scom-product/interface.ts" {
     import { ICommunityProductInfo } from '@scom/scom-social-sdk';
+    export interface IProductConfig {
+        creatorId?: string;
+        communityId?: string;
+        stallId?: string;
+        productId?: string;
+    }
     export interface IProductInfo {
-        config?: {
-            communityUri: string;
-            productId?: string;
-        };
+        config?: IProductConfig;
         product?: ICommunityProductInfo;
     }
 }
 /// <amd-module name="@scom/scom-product/utils.ts" />
 declare module "@scom/scom-product/utils.ts" {
-    export function extractCommunityUri(communityUri: string): {
-        creatorId: string;
-        communityId: string;
-    };
     export function getCommunityBasicInfoFromUri(communityUri: string): import("@scom/scom-social-sdk").ICommunityBasicInfo;
-    export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<any>;
-    export function fetchCommunityProducts(creatorId: string, communityId: string): Promise<any>;
+    export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
+    export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
 }
 /// <amd-module name="@scom/scom-product/configInput.tsx" />
 declare module "@scom/scom-product/configInput.tsx" {
     import { ControlElement, Module } from '@ijstech/components';
-    interface IProductConfig {
-        communityUri?: string;
-        productId?: string;
-    }
+    import { IProductConfig } from "@scom/scom-product/interface.ts";
     global {
         namespace JSX {
             interface IntrinsicElements {
@@ -42,17 +38,23 @@ declare module "@scom/scom-product/configInput.tsx" {
         }
     }
     export class ScomProductConfigInput extends Module {
-        private edtCommunityUri;
+        private pnlStall;
+        private comboStallId;
+        private edtStallId;
         private comboProductId;
         private timeout;
+        private config;
         private products;
         getData(): {
-            communityUri: any;
+            creatorId: string;
+            communityId: string;
+            stallId: any;
             productId: string;
         };
         setData(data: IProductConfig): Promise<void>;
         private fetchCommunityProducts;
-        private handleCommunityUriChanged;
+        private handleStallIdChanged;
+        private handleStallInputChanged;
         private handleProductIdChanged;
         init(): void;
         render(): any;
@@ -83,7 +85,9 @@ declare module "@scom/scom-product/formSchema.ts" {
             "#/properties/config": {
                 render: () => ScomProductConfigInput;
                 getData: (control: ScomProductConfigInput) => {
-                    communityUri: any;
+                    creatorId: string;
+                    communityId: string;
+                    stallId: any;
                     productId: string;
                 };
                 setData: (control: ScomProductConfigInput, value: string, rowData: any) => Promise<void>;
@@ -166,16 +170,19 @@ declare module "@scom/scom-product/translations.json.ts" {
             stock: string;
             community: string;
             product: string;
+            stall: string;
         };
         "zh-hant": {
             stock: string;
             community: string;
             product: string;
+            stall: string;
         };
         vi: {
             stock: string;
             community: string;
             product: string;
+            stall: string;
         };
     };
     export default _default_1;

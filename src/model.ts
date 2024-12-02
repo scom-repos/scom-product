@@ -1,6 +1,6 @@
 import formSchema from "./formSchema";
 import { IProductInfo } from "./interface";
-import { fetchCommunityProducts, extractCommunityUri } from "./utils";
+import { fetchCommunityProducts } from "./utils";
 
 export class ProductModel {
     private _data: IProductInfo = {};
@@ -24,9 +24,8 @@ export class ProductModel {
     async setData(value: IProductInfo) {
         this._data = value;
         const { config, product } = this._data || {};
-        if (!product && config) {
-            const { creatorId, communityId } = extractCommunityUri(config.communityUri);
-            const products = await fetchCommunityProducts(creatorId, communityId);
+        if (!product && config?.creatorId && config?.communityId) {
+            const products = await fetchCommunityProducts(config.creatorId, config.communityId);
             this._data.product = products?.find(product => product.id === config.productId);
         }
         if (this.updateUIBySetData) this.updateUIBySetData();

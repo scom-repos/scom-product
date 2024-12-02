@@ -11,10 +11,8 @@ import {
     StackLayout,
     Styles,
 } from '@ijstech/components';
-import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { imageListStyle, numberInputStyle } from './index.css';
 import { ProductModel } from './model';
-import { getCommunityBasicInfoFromUri } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 

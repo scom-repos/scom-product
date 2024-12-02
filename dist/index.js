@@ -50,15 +50,7 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
 define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk"], function (require, exports, components_2, scom_social_sdk_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = exports.extractCommunityUri = void 0;
-    function extractCommunityUri(communityUri) {
-        const parts = communityUri.split('/');
-        return {
-            creatorId: parts[1],
-            communityId: parts[0]
-        };
-    }
-    exports.extractCommunityUri = extractCommunityUri;
+    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = void 0;
     function getCommunityBasicInfoFromUri(communityUri) {
         const info = scom_social_sdk_1.SocialUtilsManager.getCommunityBasicInfoFromUri(communityUri);
         info.creatorId = scom_social_sdk_1.Nip19.npubEncode(info.creatorId);
@@ -71,9 +63,9 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         return stalls;
     }
     exports.fetchCommunityStalls = fetchCommunityStalls;
-    async function fetchCommunityProducts(creatorId, communityId) {
+    async function fetchCommunityProducts(creatorId, communityId, stallId) {
         const dataManager = components_2.application.store?.mainDataManager;
-        const products = await dataManager.fetchCommunityProducts(creatorId, communityId);
+        const products = await dataManager.fetchCommunityProducts(creatorId, communityId, stallId);
         return products;
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
@@ -90,38 +82,60 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
         }
         getData() {
             return {
-                communityUri: this.edtCommunityUri?.value || "",
+                creatorId: this.config?.creatorId,
+                communityId: this.config?.communityId,
+                stallId: this.comboStallId?.selectedItem?.value || this.edtStallId?.value || "",
                 productId: this.comboProductId?.selectedItem?.value || ""
             };
         }
         async setData(data) {
-            if (this.edtCommunityUri) {
-                this.edtCommunityUri.value = data.communityUri || "";
-                if (data.communityUri) {
-                    await this.fetchCommunityProducts(data.communityUri);
+            this.config = data;
+            if (this.edtStallId) {
+                if (data.creatorId && data.communityId) {
+                    this.pnlStall.visible = true;
+                    const stalls = await (0, utils_1.fetchCommunityStalls)(data.creatorId, data.communityId);
+                    this.comboStallId.items = stalls.map(stall => ({
+                        label: stall.name || stall.id,
+                        value: stall.id
+                    }));
+                    if (data.stallId)
+                        this.comboStallId.selectedItem = this.comboStallId.items.find(item => item.value === data.stallId);
+                }
+                else {
+                    this.pnlStall.visible = false;
+                    this.edtStallId.value = data.stallId || "";
+                }
+                if (data.creatorId && data.communityId || data.stallId) {
+                    await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
                     this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
                 }
             }
         }
-        async fetchCommunityProducts(communityUri) {
-            const { creatorId, communityId } = (0, utils_1.extractCommunityUri)(communityUri);
-            this.products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId);
+        async fetchCommunityProducts(creatorId, communityId, stallId) {
+            this.products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId, stallId);
             this.comboProductId.items = this.products.map(product => ({
                 label: product.name || product.id,
                 value: product.id
             }));
         }
-        handleCommunityUriChanged() {
+        async handleStallIdChanged() {
+            this.edtStallId.value = '';
+            this.comboProductId.clear();
+            this.comboProductId.items = [];
+            if (this['onChanged'])
+                this['onChanged']();
+            const stallId = this.comboStallId.selectedItem.value;
+            await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);
+        }
+        async handleStallInputChanged() {
+            this.comboStallId.clear();
+            this.comboProductId.clear();
+            this.comboProductId.items = [];
             if (this['onChanged'])
                 this['onChanged']();
             if (this.timeout)
                 clearTimeout(this.timeout);
-            const communityUri = this.edtCommunityUri.value;
-            this.comboProductId.items = [];
-            this.comboProductId.selectedItem = undefined;
-            if (!communityUri.includes('/npub'))
-                return;
-            this.timeout = setTimeout(() => this.fetchCommunityProducts(communityUri), 500);
+            this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500);
         }
         handleProductIdChanged() {
             if (this['onChanged'])
@@ -133,7 +147,14 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
         }
         render() {
             return (this.$render("i-stack", { direction: "vertical" },
-                this.$render("i-input", { id: "edtCommunityUri", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "Community Id/Creator's npub", onChanged: this.handleCommunityUriChanged }),
+                this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
+                    this.$render("i-stack", { id: "pnlStall", direction: "vertical", width: "100%", margin: { bottom: 5 }, gap: 5, visible: false },
+                        this.$render("i-combo-box", { id: "comboStallId", width: "100%", height: 42, icon: { name: 'caret-down' }, border: { radius: '0.625rem' }, onChanged: this.handleStallIdChanged }),
+                        this.$render("i-stack", { direction: "horizontal", alignItems: "center", gap: "0.5rem" },
+                            this.$render("i-panel", { width: "100%", margin: { top: 'auto', bottom: 'auto' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } }),
+                            this.$render("i-label", { caption: "$or", font: { size: '0.75rem', color: Theme.text.secondary }, stack: { shrink: '0' } }),
+                            this.$render("i-panel", { width: "100%", margin: { top: 'auto', bottom: 'auto' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } }))),
+                    this.$render("i-input", { id: "edtStallId", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "Community Stall Id", onChanged: this.handleStallInputChanged })),
                 this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
                     this.$render("i-stack", { direction: "vertical", width: "100%", justifyContent: "center", gap: 5 },
                         this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
@@ -155,7 +176,7 @@ define("@scom/scom-product/formSchema.ts", ["require", "exports", "@scom/scom-pr
             type: 'object',
             properties: {
                 config: {
-                    title: 'Community',
+                    title: '$stall',
                     type: "object",
                     required: true
                 }
@@ -213,9 +234,8 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         async setData(value) {
             this._data = value;
             const { config, product } = this._data || {};
-            if (!product && config) {
-                const { creatorId, communityId } = (0, utils_2.extractCommunityUri)(config.communityUri);
-                const products = await (0, utils_2.fetchCommunityProducts)(creatorId, communityId);
+            if (!product && config?.creatorId && config?.communityId) {
+                const products = await (0, utils_2.fetchCommunityProducts)(config.creatorId, config.communityId);
                 this._data.product = products?.find(product => product.id === config.productId);
             }
             if (this.updateUIBySetData)
@@ -484,16 +504,19 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "stock": "Stock",
             "community": "Community",
             "product": "Product",
+            "stall": "Stall"
         },
         "zh-hant": {
             "stock": "庫存",
             "community": "社群",
             "product": "產品",
+            "stall": "攤位"
         },
         "vi": {
             "stock": "số lượng hàng tồn kho",
             "community": "Cộng đồng",
             "product": "Sản phẩm",
+            "stall": "Gian hàng"
         }
     };
 });

@@ -1,13 +1,5 @@
 import { application } from "@ijstech/components";
-import { Nip19, SocialUtilsManager } from "@scom/scom-social-sdk";
-
-export function extractCommunityUri(communityUri: string) {
-    const parts = communityUri.split('/');
-    return {
-        creatorId: parts[1],
-        communityId: parts[0]
-    }
-}
+import { Nip19, SocialDataManager, SocialUtilsManager } from "@scom/scom-social-sdk";
 
 export function getCommunityBasicInfoFromUri(communityUri: string) {
     const info = SocialUtilsManager.getCommunityBasicInfoFromUri(communityUri);
@@ -16,13 +8,13 @@ export function getCommunityBasicInfoFromUri(communityUri: string) {
 }
 
 export async function fetchCommunityStalls(creatorId: string, communityId: string) {
-    const dataManager = application.store?.mainDataManager;
+    const dataManager: SocialDataManager = application.store?.mainDataManager;
     const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
     return stalls;
 }
 
-export async function fetchCommunityProducts(creatorId: string, communityId: string) {
-    const dataManager = application.store?.mainDataManager;
-    const products = await dataManager.fetchCommunityProducts(creatorId, communityId);
+export async function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string) {
+    const dataManager: SocialDataManager = application.store?.mainDataManager;
+    const products = await dataManager.fetchCommunityProducts(creatorId, communityId, stallId);
     return products;
 }

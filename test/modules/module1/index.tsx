@@ -91,7 +91,9 @@ export default class Module1 extends Module {
         await this.initializeSocialDataManager();
         this.scomProduct.setData({
             config: {
-                communityUri: 'Dummy/npub12t6avlcy0lxm69tar8fz5cqsu7f4axe7zmkp3wfak00v9gy0n4yq25yh2m',
+                creatorId: "npub12t6avlcy0lxm69tar8fz5cqsu7f4axe7zmkp3wfak00v9gy0n4yq25yh2m",
+                communityId: "Dummy",
+                stallId: "4ca45aec-1e0f-3fa5-a2ac-b4bc18f02704",
                 productId: "b7d71742-c8cc-e91f-8a96-dcf915121619"
             }
         });

@@ -178,8 +178,7 @@ export class ScomProductDetail extends Module {
         if (!logginedUserStr) return;
         const logginedUser = JSON.parse(logginedUserStr);
         const { product } = this.model.getData() || {};
-        const { creatorId, communityId } = getCommunityBasicInfoFromUri(product.communityUri);
-        const key = `shoppingCart/${logginedUser.id}/${creatorId}/${communityId}`;
+        const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
         const productStr = localStorage.getItem(key);
         if (!productStr) {
             localStorage.setItem(key, JSON.stringify([{

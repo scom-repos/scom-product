@@ -261,7 +261,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, index_css_1, utils_3) {
+define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts"], function (require, exports, components_4, index_css_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProductDetail = void 0;
@@ -380,8 +380,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 return;
             const logginedUser = JSON.parse(logginedUserStr);
             const { product } = this.model.getData() || {};
-            const { creatorId, communityId } = (0, utils_3.getCommunityBasicInfoFromUri)(product.communityUri);
-            const key = `shoppingCart/${logginedUser.id}/${creatorId}/${communityId}`;
+            const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
             const productStr = localStorage.getItem(key);
             if (!productStr) {
                 localStorage.setItem(key, JSON.stringify([{
@@ -523,6 +522,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const { product } = this.getData() || {};
             this.imgProduct.url = product?.images?.[0] || "";
             this.lblName.caption = product?.name || "";
+            this.lblDescription.caption = product?.description || "";
+            this.lblDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         }
         async handleProductClick() {
@@ -567,6 +568,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                             this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" }))),
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
+                        this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem" }, lineHeight: "1.25rem" })))));
         }
     };

@@ -196,6 +196,7 @@ declare module "@scom/scom-product" {
     export class ScomProduct extends Module {
         private imgProduct;
         private lblName;
+        private lblDescription;
         private lblPrice;
         private model;
         private detailModule;

@@ -28,6 +28,7 @@ declare global {
 export class ScomProduct extends Module {
     private imgProduct: Image;
     private lblName: Label;
+    private lblDescription: Label;
     private lblPrice: Label;
     private model: ProductModel;
     private detailModule: ScomProductDetail;
@@ -56,6 +57,8 @@ export class ScomProduct extends Module {
         const { product } = this.getData() || {};
         this.imgProduct.url = product?.images?.[0] || "";
         this.lblName.caption = product?.name || "";
+        this.lblDescription.caption = product?.description || "";
+        this.lblDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
     }
 
@@ -148,6 +151,15 @@ export class ScomProduct extends Module {
                             font={{ size: '1.25rem', weight: 500 }}
                             wordBreak="break-word"
                             lineHeight={'1.5rem'}
+                        ></i-label>
+                        <i-label
+                            id="lblDescription"
+                            width="100%"
+                            class="text-center"
+                            font={{ size: '1rem' }}
+                            textOverflow='ellipsis'
+                            lineHeight={'1.25rem'}
+                            visible={false}
                         ></i-label>
                         <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem" }} lineHeight="1.25rem"></i-label>
                     </i-stack>

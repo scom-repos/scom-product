@@ -146,7 +146,7 @@ declare module "@scom/scom-product/productDetail.tsx" {
         private btnAddToCart;
         private activeImage;
         private _model;
-        onProductAdded: () => void;
+        onProductAdded: (stallId: string) => void;
         get model(): ProductModel;
         set model(value: ProductModel);
         private get quantity();
@@ -208,6 +208,7 @@ declare module "@scom/scom-product" {
         private lblPrice;
         private model;
         private detailModule;
+        onProductAdded: (stallId: string) => void;
         getConfigurators(): {
             name: string;
             target: string;

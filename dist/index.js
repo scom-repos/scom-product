@@ -442,7 +442,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 localStorage.setItem(key, JSON.stringify(products));
             }
             if (this.onProductAdded)
-                this.onProductAdded();
+                this.onProductAdded(product.stallId);
         }
         init() {
             super.init();
@@ -570,8 +570,10 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             if (!this.detailModule) {
                 this.detailModule = new productDetail_1.ScomProductDetail();
                 this.detailModule.model = this.model;
-                this.detailModule.onProductAdded = () => {
+                this.detailModule.onProductAdded = (stallId) => {
                     this.detailModule.closeModal();
+                    if (this.onProductAdded)
+                        this.onProductAdded(stallId);
                 };
             }
             const modal = this.detailModule.openModal({

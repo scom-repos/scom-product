@@ -32,6 +32,7 @@ export class ScomProduct extends Module {
     private lblPrice: Label;
     private model: ProductModel;
     private detailModule: ScomProductDetail;
+    onProductAdded: (stallId: string) => void;
 
     getConfigurators() {
         return this.model.getConfigurators()
@@ -66,8 +67,9 @@ export class ScomProduct extends Module {
         if (!this.detailModule) {
             this.detailModule = new ScomProductDetail();
             this.detailModule.model = this.model;
-            this.detailModule.onProductAdded = () => {
+            this.detailModule.onProductAdded = (stallId: string) => {
                 this.detailModule.closeModal();
+                if (this.onProductAdded) this.onProductAdded(stallId);
             }
         }
         const modal = this.detailModule.openModal({

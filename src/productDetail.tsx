@@ -40,7 +40,7 @@ export class ScomProductDetail extends Module {
     private btnAddToCart: Button;
     private activeImage: Image;
     private _model: ProductModel;
-    public onProductAdded: () => void;
+    public onProductAdded: (stallId: string) => void;
 
     get model() {
         return this._model;
@@ -198,7 +198,7 @@ export class ScomProductDetail extends Module {
             }
             localStorage.setItem(key, JSON.stringify(products));
         }
-        if (this.onProductAdded) this.onProductAdded();
+        if (this.onProductAdded) this.onProductAdded(product.stallId);
     }
 
     init() {

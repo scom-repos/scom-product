@@ -55,6 +55,7 @@ declare module "@scom/scom-product/configInput.tsx" {
         private fetchCommunityProducts;
         private handleStallIdChanged;
         private handleStallInputChanged;
+        private handleCopyButtonClick;
         private handleProductIdChanged;
         init(): void;
         render(): any;

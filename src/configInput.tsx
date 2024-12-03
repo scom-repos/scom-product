@@ -6,6 +6,8 @@ import {
     Input,
     ComboBox,
     StackLayout,
+    Button,
+    application,
 } from '@ijstech/components';
 import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { IProductConfig } from './interface';
@@ -53,8 +55,8 @@ export class ScomProductConfigInput extends Module {
                 if (data.stallId) this.comboStallId.selectedItem = this.comboStallId.items.find(item => item.value === data.stallId);
             } else {
                 this.pnlStall.visible = false;
-                this.edtStallId.value = data.stallId || "";
             }
+            this.edtStallId.value = data.stallId || "";
             if (data.creatorId && data.communityId || data.stallId) {
                 await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
                 this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
@@ -71,21 +73,35 @@ export class ScomProductConfigInput extends Module {
     }
 
     private async handleStallIdChanged() {
-        this.edtStallId.value = '';
+        const stallId = this.comboStallId.selectedItem.value;
+        this.edtStallId.value = stallId;
         this.comboProductId.clear();
         this.comboProductId.items = [];
         if (this['onChanged']) this['onChanged']();
-        const stallId = this.comboStallId.selectedItem.value;
         await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);
     }
 
     private async handleStallInputChanged() {
+        const stallId = this.edtStallId.value;
         this.comboStallId.clear();
         this.comboProductId.clear();
         this.comboProductId.items = [];
+        const stall = this.comboStallId.items?.find(item => item.value === stallId);
+        if (stall) this.comboStallId.selectedItem = stall;
         if (this['onChanged']) this['onChanged']();
         if (this.timeout) clearTimeout(this.timeout);
         this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500)
+    }
+
+    private async handleCopyButtonClick(btn: Button) {
+        const stallId = this.edtStallId.value;
+        application.copyToClipboard(stallId || "");
+        btn.icon.name = 'check';
+        btn.icon.fill = Theme.colors.success.main;
+        setTimeout(() => {
+            btn.icon.fill = Theme.colors.primary.contrastText;
+            btn.icon.name = 'copy';
+        }, 1600)
     }
 
     private handleProductIdChanged() {
@@ -124,15 +140,33 @@ export class ScomProductConfigInput extends Module {
                             ></i-panel>
                         </i-stack>
                     </i-stack>
-                    <i-input
-                        id="edtStallId"
+                    <i-stack
+                        direction="horizontal"
+                        alignItems="center"
                         width="100%"
-                        height={42}
-                        padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
-                        border={{ radius: '0.625rem' }}
-                        placeholder="Community Stall Id"
-                        onChanged={this.handleStallInputChanged}
-                    ></i-input>
+                        background={{ color: Theme.input.background }}
+                        padding={{ left: '0.5rem' }}
+                        border={{ radius: 5 }}
+                        gap="0.25rem"
+                    >
+                        <i-input
+                            id="edtStallId"
+                            width="100%"
+                            height={42}
+                            border={{ radius: '0.625rem' }}
+                            placeholder="Community Stall Id"
+                            onChanged={this.handleStallInputChanged}
+                        ></i-input>
+                        <i-button
+                            height={'2.25rem'}
+                            width={'2.25rem'}
+                            border={{ radius: '0.5rem' }}
+                            boxShadow='none'
+                            background={{ color: 'transparent' }}
+                            icon={{ width: '1rem', height: '1rem', name: 'copy', fill: Theme.colors.primary.contrastText }}
+                            onClick={this.handleCopyButtonClick}
+                        ></i-button>
+                    </i-stack>
                 </i-panel>
                 <i-panel padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>
                     <i-stack direction="vertical" width="100%" justifyContent="center" gap={5}>

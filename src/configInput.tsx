@@ -90,7 +90,7 @@ export class ScomProductConfigInput extends Module {
         if (stall) this.comboStallId.selectedItem = stall;
         if (this['onChanged']) this['onChanged']();
         if (this.timeout) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500)
+        if (stallId) this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500)
     }
 
     private async handleCopyButtonClick(btn: Button) {

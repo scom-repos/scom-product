@@ -139,7 +139,8 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                 this['onChanged']();
             if (this.timeout)
                 clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500);
+            if (stallId)
+                this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500);
         }
         async handleCopyButtonClick(btn) {
             const stallId = this.edtStallId.value;

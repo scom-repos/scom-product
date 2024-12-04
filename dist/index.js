@@ -102,11 +102,14 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             this.config = {};
         }
         getData() {
+            const productId = this.comboProductId?.selectedItem?.value || "";
+            if (!productId)
+                return;
             return {
                 creatorId: this.config?.creatorId,
                 communityId: this.config?.communityId,
                 stallId: this.comboStallId?.selectedItem?.value || "",
-                productId: this.comboProductId?.selectedItem?.value || ""
+                productId: productId
             };
         }
         async setData(data) {
@@ -122,7 +125,6 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                     }
                     else {
                         this.comboStallId.clear();
-                        this.comboStallId.items = [];
                         this.comboProductId.clear();
                         this.comboProductId.items = [];
                     }
@@ -142,6 +144,7 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                 label: stall.name || stall.id,
                 value: stall.id
             }));
+            this.comboStallId.enabled = true;
         }
         async fetchCommunityProducts(creatorId, communityId, stallId) {
             const products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId, stallId);
@@ -149,12 +152,15 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                 label: product.name || product.id,
                 value: product.id
             }));
+            this.comboProductId.enabled = true;
         }
         async handleCommunityUriChanged() {
             this.comboStallId.clear();
             this.comboStallId.items = [];
+            this.comboStallId.enabled = false;
             this.comboProductId.clear();
             this.comboProductId.items = [];
+            this.comboProductId.enabled = false;
             if (this['onChanged'])
                 this['onChanged']();
             const communityUri = this.edtCommunityUri.value;
@@ -169,6 +175,7 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             const stallId = this.comboStallId.selectedItem.value;
             this.comboProductId.clear();
             this.comboProductId.items = [];
+            this.comboProductId.enabled = false;
             if (this['onChanged'])
                 this['onChanged']();
             await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);

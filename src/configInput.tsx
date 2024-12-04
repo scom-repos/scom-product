@@ -32,11 +32,13 @@ export class ScomProductConfigInput extends Module {
     private config: IProductConfig = {};
 
     getData() {
+        const productId = this.comboProductId?.selectedItem?.value || "";
+        if (!productId) return;
         return {
             creatorId: this.config?.creatorId,
             communityId: this.config?.communityId,
             stallId: this.comboStallId?.selectedItem?.value || "",
-            productId: this.comboProductId?.selectedItem?.value || ""
+            productId: productId
         }
     }
 
@@ -52,7 +54,6 @@ export class ScomProductConfigInput extends Module {
                     this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
                 } else {
                     this.comboStallId.clear();
-                    this.comboStallId.items = [];
                     this.comboProductId.clear();
                     this.comboProductId.items = [];
                 }
@@ -72,6 +73,7 @@ export class ScomProductConfigInput extends Module {
             label: stall.name || stall.id,
             value: stall.id
         }));
+        this.comboStallId.enabled = true;
     }
 
     private async fetchCommunityProducts(creatorId: string, communityId: string, stallId?: string) {
@@ -80,13 +82,16 @@ export class ScomProductConfigInput extends Module {
             label: product.name || product.id,
             value: product.id
         }));
+        this.comboProductId.enabled = true;
     }
 
     private async handleCommunityUriChanged() {
         this.comboStallId.clear();
         this.comboStallId.items = [];
+        this.comboStallId.enabled = false;
         this.comboProductId.clear();
         this.comboProductId.items = [];
+        this.comboProductId.enabled = false;
         if (this['onChanged']) this['onChanged']();
         const communityUri: string = this.edtCommunityUri.value;
         if (!communityUri) return;
@@ -100,6 +105,7 @@ export class ScomProductConfigInput extends Module {
         const stallId = this.comboStallId.selectedItem.value;
         this.comboProductId.clear();
         this.comboProductId.items = [];
+        this.comboProductId.enabled = false;
         if (this['onChanged']) this['onChanged']();
         await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);
     }

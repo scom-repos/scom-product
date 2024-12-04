@@ -89,6 +89,7 @@ export class ScomProductConfigInput extends Module {
         this.comboProductId.items = [];
         if (this['onChanged']) this['onChanged']();
         const communityUri: string = this.edtCommunityUri.value;
+        if (!communityUri) return;
         const { creatorId, communityId } = getCommunityBasicInfoFromUri(communityUri);
         this.config.creatorId = creatorId,
         this.config.communityId = communityId,

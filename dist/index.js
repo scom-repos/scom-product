@@ -158,6 +158,8 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             if (this['onChanged'])
                 this['onChanged']();
             const communityUri = this.edtCommunityUri.value;
+            if (!communityUri)
+                return;
             const { creatorId, communityId } = (0, utils_1.getCommunityBasicInfoFromUri)(communityUri);
             this.config.creatorId = creatorId,
                 this.config.communityId = communityId,

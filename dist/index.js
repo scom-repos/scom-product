@@ -47,14 +47,35 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk"], function (require, exports, components_2, scom_social_sdk_1) {
+define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.getCommunityBasicInfoFromUri = void 0;
+    function extractEnsName(name) {
+        const result = {};
+        const ensMap = components_2.application.store?.ensMap || {};
+        const value = ensMap[name];
+        if (!value)
+            return result;
+        const ids = value.split('/');
+        const isCommunity = ids.length > 1;
+        if (isCommunity) {
+            result.communityId = ids[0];
+            result.creatorId = ids[1];
+        }
+        return result;
+    }
     function getCommunityBasicInfoFromUri(communityUri) {
-        const info = scom_social_sdk_1.SocialUtilsManager.getCommunityBasicInfoFromUri(communityUri);
-        info.creatorId = scom_social_sdk_1.Nip19.npubEncode(info.creatorId);
-        return info;
+        if (communityUri.includes('/')) {
+            const parts = communityUri.split('/');
+            return {
+                creatorId: parts[1],
+                communityId: parts[0]
+            };
+        }
+        else {
+            return extractEnsName(communityUri);
+        }
     }
     exports.getCommunityBasicInfoFromUri = getCommunityBasicInfoFromUri;
     async function fetchCommunityStalls(creatorId, communityId) {
@@ -78,79 +99,77 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
     let ScomProductConfigInput = class ScomProductConfigInput extends components_3.Module {
         constructor() {
             super(...arguments);
-            this.products = [];
+            this.config = {};
         }
         getData() {
             return {
                 creatorId: this.config?.creatorId,
                 communityId: this.config?.communityId,
-                stallId: this.comboStallId?.selectedItem?.value || this.edtStallId?.value || "",
+                stallId: this.comboStallId?.selectedItem?.value || "",
                 productId: this.comboProductId?.selectedItem?.value || ""
             };
         }
         async setData(data) {
             this.config = data;
-            if (this.edtStallId) {
+            if (this.edtCommunityUri) {
                 if (data.creatorId && data.communityId) {
-                    this.pnlStall.visible = true;
-                    const stalls = await (0, utils_1.fetchCommunityStalls)(data.creatorId, data.communityId);
-                    this.comboStallId.items = stalls.map(stall => ({
-                        label: stall.name || stall.id,
-                        value: stall.id
-                    }));
-                    if (data.stallId)
+                    this.edtCommunityUri.value = `${data.communityId}/${data.creatorId}`;
+                    await this.fetchCommunityStalls(data.creatorId, data.communityId);
+                    if (data.stallId) {
                         this.comboStallId.selectedItem = this.comboStallId.items.find(item => item.value === data.stallId);
+                        await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
+                        this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
+                    }
+                    else {
+                        this.comboStallId.clear();
+                        this.comboStallId.items = [];
+                        this.comboProductId.clear();
+                        this.comboProductId.items = [];
+                    }
                 }
                 else {
-                    this.pnlStall.visible = false;
-                }
-                this.edtStallId.value = data.stallId || "";
-                if (data.creatorId && data.communityId || data.stallId) {
-                    await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
-                    this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
+                    this.edtCommunityUri.value = "";
+                    this.comboStallId.clear();
+                    this.comboStallId.items = [];
+                    this.comboProductId.clear();
+                    this.comboProductId.items = [];
                 }
             }
         }
+        async fetchCommunityStalls(creatorId, communityId) {
+            const stalls = await (0, utils_1.fetchCommunityStalls)(creatorId, communityId);
+            this.comboStallId.items = stalls.map(stall => ({
+                label: stall.name || stall.id,
+                value: stall.id
+            }));
+        }
         async fetchCommunityProducts(creatorId, communityId, stallId) {
-            this.products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId, stallId);
-            this.comboProductId.items = this.products.map(product => ({
+            const products = await (0, utils_1.fetchCommunityProducts)(creatorId, communityId, stallId);
+            this.comboProductId.items = products.map(product => ({
                 label: product.name || product.id,
                 value: product.id
             }));
         }
+        async handleCommunityUriChanged() {
+            this.comboStallId.clear();
+            this.comboStallId.items = [];
+            this.comboProductId.clear();
+            this.comboProductId.items = [];
+            if (this['onChanged'])
+                this['onChanged']();
+            const communityUri = this.edtCommunityUri.value;
+            const { creatorId, communityId } = (0, utils_1.getCommunityBasicInfoFromUri)(communityUri);
+            this.config.creatorId = creatorId,
+                this.config.communityId = communityId,
+                await this.fetchCommunityStalls(creatorId, communityId);
+        }
         async handleStallIdChanged() {
             const stallId = this.comboStallId.selectedItem.value;
-            this.edtStallId.value = stallId;
             this.comboProductId.clear();
             this.comboProductId.items = [];
             if (this['onChanged'])
                 this['onChanged']();
             await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);
-        }
-        async handleStallInputChanged() {
-            const stallId = this.edtStallId.value;
-            this.comboStallId.clear();
-            this.comboProductId.clear();
-            this.comboProductId.items = [];
-            const stall = this.comboStallId.items?.find(item => item.value === stallId);
-            if (stall)
-                this.comboStallId.selectedItem = stall;
-            if (this['onChanged'])
-                this['onChanged']();
-            if (this.timeout)
-                clearTimeout(this.timeout);
-            if (stallId)
-                this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500);
-        }
-        async handleCopyButtonClick(btn) {
-            const stallId = this.edtStallId.value;
-            components_3.application.copyToClipboard(stallId || "");
-            btn.icon.name = 'check';
-            btn.icon.fill = Theme.colors.success.main;
-            setTimeout(() => {
-                btn.icon.fill = Theme.colors.primary.contrastText;
-                btn.icon.name = 'copy';
-            }, 1600);
         }
         handleProductIdChanged() {
             if (this['onChanged'])
@@ -162,16 +181,13 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
         }
         render() {
             return (this.$render("i-stack", { direction: "vertical" },
+                this.$render("i-input", { id: "edtCommunityUri", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "Community Id/Creator's npub or ENS name", onChanged: this.handleCommunityUriChanged }),
                 this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
-                    this.$render("i-stack", { id: "pnlStall", direction: "vertical", width: "100%", margin: { bottom: 5 }, gap: 5, visible: false },
-                        this.$render("i-combo-box", { id: "comboStallId", width: "100%", height: 42, icon: { name: 'caret-down' }, border: { radius: '0.625rem' }, onChanged: this.handleStallIdChanged }),
-                        this.$render("i-stack", { direction: "horizontal", alignItems: "center", gap: "0.5rem" },
-                            this.$render("i-panel", { width: "100%", margin: { top: 'auto', bottom: 'auto' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } }),
-                            this.$render("i-label", { caption: "$or", font: { size: '0.75rem', color: Theme.text.secondary }, stack: { shrink: '0' } }),
-                            this.$render("i-panel", { width: "100%", margin: { top: 'auto', bottom: 'auto' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } }))),
-                    this.$render("i-stack", { direction: "horizontal", alignItems: "center", width: "100%", background: { color: Theme.input.background }, padding: { left: '0.5rem' }, border: { radius: 5 }, gap: "0.25rem" },
-                        this.$render("i-input", { id: "edtStallId", width: "100%", height: 42, border: { radius: '0.625rem' }, placeholder: "Community Stall Id", onChanged: this.handleStallInputChanged }),
-                        this.$render("i-button", { height: '2.25rem', width: '2.25rem', border: { radius: '0.5rem' }, boxShadow: 'none', background: { color: 'transparent' }, icon: { width: '1rem', height: '1rem', name: 'copy', fill: Theme.colors.primary.contrastText }, onClick: this.handleCopyButtonClick }))),
+                    this.$render("i-stack", { direction: "vertical", width: "100%", margin: { bottom: 5 }, gap: 5 },
+                        this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
+                            this.$render("i-label", { caption: "$stall" }),
+                            this.$render("i-label", { caption: " *", font: { color: Theme.colors.error.main } })),
+                        this.$render("i-combo-box", { id: "comboStallId", width: "100%", height: 42, icon: { name: 'caret-down' }, border: { radius: '0.625rem' }, onChanged: this.handleStallIdChanged }))),
                 this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
                     this.$render("i-stack", { direction: "vertical", width: "100%", justifyContent: "center", gap: 5 },
                         this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
@@ -193,7 +209,7 @@ define("@scom/scom-product/formSchema.ts", ["require", "exports", "@scom/scom-pr
             type: 'object',
             properties: {
                 config: {
-                    title: '$stall',
+                    title: '$community',
                     type: "object",
                     required: true
                 }

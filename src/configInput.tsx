@@ -11,7 +11,7 @@ import {
 } from '@ijstech/components';
 import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { IProductConfig } from './interface';
-import { fetchCommunityProducts, fetchCommunityStalls } from './utils';
+import { fetchCommunityProducts, fetchCommunityStalls, getCommunityBasicInfoFromUri } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -25,83 +25,82 @@ declare global {
 
 @customElements('i-scom-product--config-input')
 export class ScomProductConfigInput extends Module {
-    private pnlStall: StackLayout;
+    private edtCommunityUri: Input;
     private comboStallId: ComboBox;
-    private edtStallId: Input;
     private comboProductId: ComboBox;
     private timeout: any;
-    private config: IProductConfig;
-    private products: ICommunityProductInfo[] = [];
+    private config: IProductConfig = {};
 
     getData() {
         return {
             creatorId: this.config?.creatorId,
             communityId: this.config?.communityId,
-            stallId: this.comboStallId?.selectedItem?.value || this.edtStallId?.value || "",
+            stallId: this.comboStallId?.selectedItem?.value || "",
             productId: this.comboProductId?.selectedItem?.value || ""
         }
     }
 
     async setData(data: IProductConfig) {
         this.config = data;
-        if (this.edtStallId) {
+        if (this.edtCommunityUri) {
             if (data.creatorId && data.communityId) {
-                this.pnlStall.visible = true;
-                const stalls = await fetchCommunityStalls(data.creatorId, data.communityId);
-                this.comboStallId.items = stalls.map(stall => ({
-                    label: stall.name || stall.id,
-                    value: stall.id
-                }));
-                if (data.stallId) this.comboStallId.selectedItem = this.comboStallId.items.find(item => item.value === data.stallId);
+                this.edtCommunityUri.value = `${data.communityId}/${data.creatorId}`;
+                await this.fetchCommunityStalls(data.creatorId, data.communityId);
+                if (data.stallId) {
+                    this.comboStallId.selectedItem = this.comboStallId.items.find(item => item.value === data.stallId);
+                    await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
+                    this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
+                } else {
+                    this.comboStallId.clear();
+                    this.comboStallId.items = [];
+                    this.comboProductId.clear();
+                    this.comboProductId.items = [];
+                }
             } else {
-                this.pnlStall.visible = false;
-            }
-            this.edtStallId.value = data.stallId || "";
-            if (data.creatorId && data.communityId || data.stallId) {
-                await this.fetchCommunityProducts(data.creatorId, data.communityId, data.stallId);
-                this.comboProductId.selectedItem = this.comboProductId.items.find(product => product.value === data.productId);
+                this.edtCommunityUri.value = "";
+                this.comboStallId.clear();
+                this.comboStallId.items = [];
+                this.comboProductId.clear();
+                this.comboProductId.items = [];
             }
         }
     }
 
-    private async fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string) {
-        this.products = await fetchCommunityProducts(creatorId, communityId, stallId);
-        this.comboProductId.items = this.products.map(product => ({
+    private async fetchCommunityStalls(creatorId: string, communityId: string) {
+        const stalls = await fetchCommunityStalls(creatorId, communityId);
+        this.comboStallId.items = stalls.map(stall => ({
+            label: stall.name || stall.id,
+            value: stall.id
+        }));
+    }
+
+    private async fetchCommunityProducts(creatorId: string, communityId: string, stallId?: string) {
+        const products = await fetchCommunityProducts(creatorId, communityId, stallId);
+        this.comboProductId.items = products.map(product => ({
             label: product.name || product.id,
             value: product.id
         }));
     }
 
+    private async handleCommunityUriChanged() {
+        this.comboStallId.clear();
+        this.comboStallId.items = [];
+        this.comboProductId.clear();
+        this.comboProductId.items = [];
+        if (this['onChanged']) this['onChanged']();
+        const communityUri: string = this.edtCommunityUri.value;
+        const { creatorId, communityId } = getCommunityBasicInfoFromUri(communityUri);
+        this.config.creatorId = creatorId,
+        this.config.communityId = communityId,
+        await this.fetchCommunityStalls(creatorId, communityId);
+    }
+
     private async handleStallIdChanged() {
         const stallId = this.comboStallId.selectedItem.value;
-        this.edtStallId.value = stallId;
         this.comboProductId.clear();
         this.comboProductId.items = [];
         if (this['onChanged']) this['onChanged']();
         await this.fetchCommunityProducts(this.config.creatorId, this.config.communityId, stallId);
-    }
-
-    private async handleStallInputChanged() {
-        const stallId = this.edtStallId.value;
-        this.comboStallId.clear();
-        this.comboProductId.clear();
-        this.comboProductId.items = [];
-        const stall = this.comboStallId.items?.find(item => item.value === stallId);
-        if (stall) this.comboStallId.selectedItem = stall;
-        if (this['onChanged']) this['onChanged']();
-        if (this.timeout) clearTimeout(this.timeout);
-        if (stallId) this.timeout = setTimeout(() => this.fetchCommunityProducts(undefined, undefined, this.edtStallId.value), 500)
-    }
-
-    private async handleCopyButtonClick(btn: Button) {
-        const stallId = this.edtStallId.value;
-        application.copyToClipboard(stallId || "");
-        btn.icon.name = 'check';
-        btn.icon.fill = Theme.colors.success.main;
-        setTimeout(() => {
-            btn.icon.fill = Theme.colors.primary.contrastText;
-            btn.icon.name = 'copy';
-        }, 1600)
     }
 
     private handleProductIdChanged() {
@@ -116,8 +115,21 @@ export class ScomProductConfigInput extends Module {
     render() {
         return (
             <i-stack direction="vertical">
+                <i-input
+                    id="edtCommunityUri"
+                    width="100%"
+                    height={42}
+                    padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
+                    border={{ radius: '0.625rem' }}
+                    placeholder="Community Id/Creator's npub or ENS name"
+                    onChanged={this.handleCommunityUriChanged}
+                ></i-input>
                 <i-panel padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                    <i-stack id="pnlStall" direction="vertical" width="100%" margin={{ bottom: 5 }} gap={5} visible={false}>
+                    <i-stack direction="vertical" width="100%" margin={{ bottom: 5 }} gap={5}>
+                        <i-stack direction="horizontal" width="100%" alignItems="center" gap={2}>
+                            <i-label caption="$stall"></i-label>
+                            <i-label caption=" *" font={{ color: Theme.colors.error.main }}></i-label>
+                        </i-stack>
                         <i-combo-box
                             id="comboStallId"
                             width="100%"
@@ -126,46 +138,6 @@ export class ScomProductConfigInput extends Module {
                             border={{ radius: '0.625rem' }}
                             onChanged={this.handleStallIdChanged}
                         ></i-combo-box>
-                        <i-stack direction="horizontal" alignItems="center" gap="0.5rem">
-                            <i-panel
-                                width="100%"
-                                margin={{ top: 'auto', bottom: 'auto' }}
-                                border={{ bottom: { width: 1, style: 'solid', color: Theme.divider } }}
-                            ></i-panel>
-                            <i-label caption="$or" font={{ size: '0.75rem', color: Theme.text.secondary }} stack={{ shrink: '0' }}></i-label>
-                            <i-panel
-                                width="100%"
-                                margin={{ top: 'auto', bottom: 'auto' }}
-                                border={{ bottom: { width: 1, style: 'solid', color: Theme.divider } }}
-                            ></i-panel>
-                        </i-stack>
-                    </i-stack>
-                    <i-stack
-                        direction="horizontal"
-                        alignItems="center"
-                        width="100%"
-                        background={{ color: Theme.input.background }}
-                        padding={{ left: '0.5rem' }}
-                        border={{ radius: 5 }}
-                        gap="0.25rem"
-                    >
-                        <i-input
-                            id="edtStallId"
-                            width="100%"
-                            height={42}
-                            border={{ radius: '0.625rem' }}
-                            placeholder="Community Stall Id"
-                            onChanged={this.handleStallInputChanged}
-                        ></i-input>
-                        <i-button
-                            height={'2.25rem'}
-                            width={'2.25rem'}
-                            border={{ radius: '0.5rem' }}
-                            boxShadow='none'
-                            background={{ color: 'transparent' }}
-                            icon={{ width: '1rem', height: '1rem', name: 'copy', fill: Theme.colors.primary.contrastText }}
-                            onClick={this.handleCopyButtonClick}
-                        ></i-button>
                     </i-stack>
                 </i-panel>
                 <i-panel padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>

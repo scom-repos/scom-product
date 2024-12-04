@@ -22,7 +22,10 @@ declare module "@scom/scom-product/interface.ts" {
 }
 /// <amd-module name="@scom/scom-product/utils.ts" />
 declare module "@scom/scom-product/utils.ts" {
-    export function getCommunityBasicInfoFromUri(communityUri: string): import("@scom/scom-social-sdk").ICommunityBasicInfo;
+    export function getCommunityBasicInfoFromUri(communityUri: string): {
+        creatorId?: string;
+        communityId?: string;
+    };
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
     export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
 }
@@ -38,24 +41,22 @@ declare module "@scom/scom-product/configInput.tsx" {
         }
     }
     export class ScomProductConfigInput extends Module {
-        private pnlStall;
+        private edtCommunityUri;
         private comboStallId;
-        private edtStallId;
         private comboProductId;
         private timeout;
         private config;
-        private products;
         getData(): {
             creatorId: string;
             communityId: string;
-            stallId: any;
+            stallId: string;
             productId: string;
         };
         setData(data: IProductConfig): Promise<void>;
+        private fetchCommunityStalls;
         private fetchCommunityProducts;
+        private handleCommunityUriChanged;
         private handleStallIdChanged;
-        private handleStallInputChanged;
-        private handleCopyButtonClick;
         private handleProductIdChanged;
         init(): void;
         render(): any;
@@ -88,7 +89,7 @@ declare module "@scom/scom-product/formSchema.ts" {
                 getData: (control: ScomProductConfigInput) => {
                     creatorId: string;
                     communityId: string;
-                    stallId: any;
+                    stallId: string;
                     productId: string;
                 };
                 setData: (control: ScomProductConfigInput, value: string, rowData: any) => Promise<void>;

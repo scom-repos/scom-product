@@ -5,7 +5,7 @@ export default {
         type: 'object',
         properties: {
             config: {
-                title: '$stall',
+                title: '$community',
                 type: "object",
                 required: true
             }

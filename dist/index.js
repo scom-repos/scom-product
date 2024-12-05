@@ -278,9 +278,13 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         async setData(value) {
             this._data = value;
             const { config, product } = this._data || {};
-            if (!product && config?.creatorId && config?.communityId) {
-                const products = await (0, utils_2.fetchCommunityProducts)(config.creatorId, config.communityId);
-                this._data.product = products?.find(product => product.id === config.productId);
+            if (config?.creatorId && config?.communityId) {
+                if (!product) {
+                    const products = await (0, utils_2.fetchCommunityProducts)(config.creatorId, config.communityId);
+                    this._data.product = products?.find(product => product.id === config.productId);
+                }
+                const stalls = await (0, utils_2.fetchCommunityStalls)(config.creatorId, config.communityId);
+                this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
             }
             if (this.updateUIBySetData)
                 this.updateUIBySetData();
@@ -443,12 +447,13 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             if (!logginedUserStr)
                 return;
             const logginedUser = JSON.parse(logginedUserStr);
-            const { product } = this.model.getData() || {};
+            const { product, stall } = this.model.getData() || {};
             const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
             const productStr = localStorage.getItem(key);
             if (!productStr) {
                 localStorage.setItem(key, JSON.stringify([{
                         ...product,
+                        stallName: stall.name,
                         quantity: this.quantity,
                         available: product.quantity
                     }]));
@@ -462,6 +467,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 else {
                     products.push({
                         ...product,
+                        stallName: stall.name,
                         quantity: this.quantity,
                         available: product.quantity
                     });

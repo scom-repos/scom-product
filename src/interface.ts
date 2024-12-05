@@ -1,4 +1,4 @@
-import { ICommunityProductInfo } from '@scom/scom-social-sdk';
+import { ICommunityProductInfo, ICommunityStallInfo } from '@scom/scom-social-sdk';
 
 export interface IProductConfig {
     creatorId?: string;
@@ -10,4 +10,5 @@ export interface IProductConfig {
 export interface IProductInfo {
     config?: IProductConfig,
     product?: ICommunityProductInfo;
+    stall?: ICommunityStallInfo;
 }

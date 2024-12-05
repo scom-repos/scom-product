@@ -8,7 +8,7 @@ declare module "@scom/scom-product/index.css.ts" {
 }
 /// <amd-module name="@scom/scom-product/interface.ts" />
 declare module "@scom/scom-product/interface.ts" {
-    import { ICommunityProductInfo } from '@scom/scom-social-sdk';
+    import { ICommunityProductInfo, ICommunityStallInfo } from '@scom/scom-social-sdk';
     export interface IProductConfig {
         creatorId?: string;
         communityId?: string;
@@ -18,6 +18,7 @@ declare module "@scom/scom-product/interface.ts" {
     export interface IProductInfo {
         config?: IProductConfig;
         product?: ICommunityProductInfo;
+        stall?: ICommunityStallInfo;
     }
 }
 /// <amd-module name="@scom/scom-product/utils.ts" />

@@ -175,12 +175,13 @@ export class ScomProductDetail extends Module {
         const logginedUserStr = localStorage.getItem('loggedInUser');
         if (!logginedUserStr) return;
         const logginedUser = JSON.parse(logginedUserStr);
-        const { product } = this.model.getData() || {};
+        const { product, stall } = this.model.getData() || {};
         const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
         const productStr = localStorage.getItem(key);
         if (!productStr) {
             localStorage.setItem(key, JSON.stringify([{
                 ...product,
+                stallName: stall.name,
                 quantity: this.quantity,
                 available: product.quantity
             }]));
@@ -192,6 +193,7 @@ export class ScomProductDetail extends Module {
             } else {
                 products.push({
                     ...product,
+                    stallName: stall.name,
                     quantity: this.quantity,
                     available: product.quantity
                 });

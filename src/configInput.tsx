@@ -93,12 +93,13 @@ export class ScomProductConfigInput extends Module {
         this.comboProductId.items = [];
         this.comboProductId.enabled = false;
         if (this['onChanged']) this['onChanged']();
+        if (this.timeout) clearTimeout(this.timeout);
         const communityUri: string = this.edtCommunityUri.value;
         if (!communityUri) return;
         const { creatorId, communityId } = getCommunityBasicInfoFromUri(communityUri);
         this.config.creatorId = creatorId,
         this.config.communityId = communityId,
-        await this.fetchCommunityStalls(creatorId, communityId);
+        this.timeout = setTimeout(() => this.fetchCommunityStalls(creatorId, communityId), 350)
     }
 
     private async handleStallIdChanged() {

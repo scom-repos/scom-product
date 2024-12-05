@@ -163,13 +163,15 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
             this.comboProductId.enabled = false;
             if (this['onChanged'])
                 this['onChanged']();
+            if (this.timeout)
+                clearTimeout(this.timeout);
             const communityUri = this.edtCommunityUri.value;
             if (!communityUri)
                 return;
             const { creatorId, communityId } = (0, utils_1.getCommunityBasicInfoFromUri)(communityUri);
             this.config.creatorId = creatorId,
                 this.config.communityId = communityId,
-                await this.fetchCommunityStalls(creatorId, communityId);
+                this.timeout = setTimeout(() => this.fetchCommunityStalls(creatorId, communityId), 350);
         }
         async handleStallIdChanged() {
             const stallId = this.comboStallId.selectedItem.value;

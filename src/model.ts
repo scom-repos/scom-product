@@ -55,14 +55,16 @@ export class ProductModel {
 
   async setData(value: IProductInfo) {
     this._data = value;
-    const { config, product } = this._data || {};
+    const { config, product, stall } = this._data || {};
     if (config?.creatorId && config?.communityId) {
       if (!product) {
         const products = await fetchCommunityProducts(config.creatorId, config.communityId);
         this._data.product = products?.find(product => product.id === config.productId);
       }
-      const stalls = await fetchCommunityStalls(config.creatorId, config.communityId);
-      this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
+      if (!stall) {
+        const stalls = await fetchCommunityStalls(config.creatorId, config.communityId);
+        this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
+      }
     }
     if (this.updateUIBySetData) this.updateUIBySetData();
   }

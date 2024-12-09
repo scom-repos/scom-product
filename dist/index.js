@@ -312,14 +312,16 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         }
         async setData(value) {
             this._data = value;
-            const { config, product } = this._data || {};
+            const { config, product, stall } = this._data || {};
             if (config?.creatorId && config?.communityId) {
                 if (!product) {
                     const products = await (0, utils_2.fetchCommunityProducts)(config.creatorId, config.communityId);
                     this._data.product = products?.find(product => product.id === config.productId);
                 }
-                const stalls = await (0, utils_2.fetchCommunityStalls)(config.creatorId, config.communityId);
-                this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
+                if (!stall) {
+                    const stalls = await (0, utils_2.fetchCommunityStalls)(config.creatorId, config.communityId);
+                    this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
+                }
             }
             if (this.updateUIBySetData)
                 this.updateUIBySetData();

@@ -3,74 +3,106 @@ import { IProductInfo } from "./interface";
 import { fetchCommunityProducts, fetchCommunityStalls } from "./utils";
 
 export class ProductModel {
-    private _data: IProductInfo = {};
-    private _tag: any;
-    public updateUIBySetData: () => Promise<void>;
+  private _data: IProductInfo = {};
+  private _tag: any;
+  public updateUIBySetData: () => Promise<void>;
 
-    getConfigurators() {
-        return [
-            {
-                name: 'Editor',
-                target: 'Editor',
-                getActions: this.getActions.bind(this),
-                getData: this.getData.bind(this),
-                setData: this.setData.bind(this),
-                getTag: this.getTag.bind(this),
-                setTag: this.setTag.bind(this)
-            }
-        ]
+  addToCart(quantity: number, callback?: (stallId: string) => void) {
+    const logginedUserStr = localStorage.getItem('loggedInUser');
+    if (!logginedUserStr) return;
+    const logginedUser = JSON.parse(logginedUserStr);
+    const { product, stall } = this.getData() || {};
+    const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
+    const productStr = localStorage.getItem(key);
+    if (!productStr) {
+      localStorage.setItem(key, JSON.stringify([{
+        ...product,
+        stallName: stall?.name || "",
+        quantity: quantity,
+        available: product.quantity
+      }]));
+    } else {
+      const products = JSON.parse(productStr) || [];
+      const selectedProduct = products.find(p => p.id === product.id);
+      if (selectedProduct) {
+        selectedProduct.quantity += quantity;
+      } else {
+        products.push({
+          ...product,
+          stallName: stall?.name || "",
+          quantity: quantity,
+          available: product.quantity
+        });
+      }
+      localStorage.setItem(key, JSON.stringify(products));
     }
+    if (callback) callback(product.stallId);
+  }
 
-    async setData(value: IProductInfo) {
-        this._data = value;
-        const { config, product } = this._data || {};
-        if (config?.creatorId && config?.communityId) {
-          if (!product) {
-            const products = await fetchCommunityProducts(config.creatorId, config.communityId);
-            this._data.product = products?.find(product => product.id === config.productId);
-          }
-          const stalls = await fetchCommunityStalls(config.creatorId, config.communityId);
-          this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
-        }
-        if (this.updateUIBySetData) this.updateUIBySetData();
+  getConfigurators() {
+    return [
+      {
+        name: 'Editor',
+        target: 'Editor',
+        getActions: this.getActions.bind(this),
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      }
+    ]
+  }
+
+  async setData(value: IProductInfo) {
+    this._data = value;
+    const { config, product } = this._data || {};
+    if (config?.creatorId && config?.communityId) {
+      if (!product) {
+        const products = await fetchCommunityProducts(config.creatorId, config.communityId);
+        this._data.product = products?.find(product => product.id === config.productId);
+      }
+      const stalls = await fetchCommunityStalls(config.creatorId, config.communityId);
+      this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
     }
+    if (this.updateUIBySetData) this.updateUIBySetData();
+  }
 
-    getData() {
-        return this._data;
-    }
+  getData() {
+    return this._data;
+  }
 
-    getTag() {
-        return this._tag;
-    }
+  getTag() {
+    return this._tag;
+  }
 
-    setTag(value: any) {
-        this._tag = value;
-    }
+  setTag(value: any) {
+    this._tag = value;
+  }
 
-    private getActions() {
-        const actions = [
-          {
-            name: 'Edit',
-            icon: 'edit',
-            command: (builder: any, userInputData: any) => {
-              let oldData: IProductInfo = {};
-              return {
-                execute: () => {
-                  oldData = JSON.parse(JSON.stringify(this._data));
-                  if (builder?.setData) builder.setData(userInputData);
-                },
-                undo: () => {
-                    this._data = JSON.parse(JSON.stringify(oldData));
-                  if (builder?.setData) builder.setData(this._data);
-                },
-                redo: () => { }
-              }
+  private getActions() {
+    const actions = [
+      {
+        name: 'Edit',
+        icon: 'edit',
+        command: (builder: any, userInputData: any) => {
+          let oldData: IProductInfo = {};
+          return {
+            execute: () => {
+              oldData = JSON.parse(JSON.stringify(this._data));
+              if (builder?.setData) builder.setData(userInputData);
             },
-            userInputDataSchema: formSchema.dataSchema,
-            userInputUISchema: formSchema.uiSchema,
-            customControls: formSchema.customControls()
+            undo: () => {
+              this._data = JSON.parse(JSON.stringify(oldData));
+              if (builder?.setData) builder.setData(this._data);
+            },
+            redo: () => { }
           }
-        ]
-        return actions;
-    }
+        },
+        userInputDataSchema: formSchema.dataSchema,
+        userInputUISchema: formSchema.uiSchema,
+        customControls: formSchema.customControls()
+      }
+    ]
+    return actions;
+  }
 }

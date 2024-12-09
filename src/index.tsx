@@ -1,4 +1,5 @@
 import {
+    Button,
     ControlElement,
     customElements,
     Image,
@@ -30,6 +31,7 @@ export class ScomProduct extends Module {
     private lblName: Label;
     private lblDescription: Label;
     private lblPrice: Label;
+    private btnAddToCart: Button;
     private model: ProductModel;
     private detailModule: ScomProductDetail;
     onProductAdded: (stallId: string) => void;
@@ -93,8 +95,21 @@ export class ScomProduct extends Module {
         modal.refresh();
     }
 
+    private handleAddToCart() {
+        this.btnAddToCart.rightIcon.spin = true;
+        this.btnAddToCart.rightIcon.visible = true;
+        this.btnAddToCart.caption = "";
+        this.model.addToCart(1, async(stallId: string) => {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            this.btnAddToCart.caption = "Add to Cart";
+            this.btnAddToCart.rightIcon.spin = false;
+            this.btnAddToCart.rightIcon.visible = false;
+            if (this.onProductAdded) this.onProductAdded(stallId);
+        });
+    }
+
     init() {
-        this.i18n.init({...translations});
+        this.i18n.init({ ...translations });
         super.init();
         this.model = new ProductModel();
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
@@ -163,8 +178,17 @@ export class ScomProduct extends Module {
                             lineHeight={'1.25rem'}
                             visible={false}
                         ></i-label>
-                        <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem" }} lineHeight="1.25rem"></i-label>
+                        <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem", weight: 600 }} lineHeight="1.25rem"></i-label>
                     </i-stack>
+                    <i-button
+                        id="btnAddToCart"
+                        minHeight={40}
+                        width="100%"
+                        caption="Add to Cart"
+                        padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
+                        font={{ color: Theme.colors.primary.contrastText, bold: true }}
+                        onClick={this.handleAddToCart}
+                    ></i-button>
                 </i-stack>
             </i-panel>
         )

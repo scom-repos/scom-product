@@ -106,6 +106,7 @@ declare module "@scom/scom-product/model.ts" {
         private _data;
         private _tag;
         updateUIBySetData: () => Promise<void>;
+        addToCart(quantity: number, callback?: (stallId: string) => void): void;
         getConfigurators(): {
             name: string;
             target: string;
@@ -208,6 +209,7 @@ declare module "@scom/scom-product" {
         private lblName;
         private lblDescription;
         private lblPrice;
+        private btnAddToCart;
         private model;
         private detailModule;
         onProductAdded: (stallId: string) => void;
@@ -226,6 +228,7 @@ declare module "@scom/scom-product" {
         setTag(value: any): void;
         private updateUIBySetData;
         private handleProductClick;
+        private handleAddToCart;
         init(): void;
         render(): any;
     }

@@ -262,6 +262,41 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         constructor() {
             this._data = {};
         }
+        addToCart(quantity, callback) {
+            const logginedUserStr = localStorage.getItem('loggedInUser');
+            if (!logginedUserStr)
+                return;
+            const logginedUser = JSON.parse(logginedUserStr);
+            const { product, stall } = this.getData() || {};
+            const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
+            const productStr = localStorage.getItem(key);
+            if (!productStr) {
+                localStorage.setItem(key, JSON.stringify([{
+                        ...product,
+                        stallName: stall?.name || "",
+                        quantity: quantity,
+                        available: product.quantity
+                    }]));
+            }
+            else {
+                const products = JSON.parse(productStr) || [];
+                const selectedProduct = products.find(p => p.id === product.id);
+                if (selectedProduct) {
+                    selectedProduct.quantity += quantity;
+                }
+                else {
+                    products.push({
+                        ...product,
+                        stallName: stall?.name || "",
+                        quantity: quantity,
+                        available: product.quantity
+                    });
+                }
+                localStorage.setItem(key, JSON.stringify(products));
+            }
+            if (callback)
+                callback(product.stallId);
+        }
         getConfigurators() {
             return [
                 {
@@ -442,40 +477,18 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.iconMinus.enabled = this.quantity > 1;
             this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         }
-        handleAddToCart() {
-            const logginedUserStr = localStorage.getItem('loggedInUser');
-            if (!logginedUserStr)
-                return;
-            const logginedUser = JSON.parse(logginedUserStr);
-            const { product, stall } = this.model.getData() || {};
-            const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
-            const productStr = localStorage.getItem(key);
-            if (!productStr) {
-                localStorage.setItem(key, JSON.stringify([{
-                        ...product,
-                        stallName: stall.name,
-                        quantity: this.quantity,
-                        available: product.quantity
-                    }]));
-            }
-            else {
-                const products = JSON.parse(productStr) || [];
-                const selectedProduct = products.find(p => p.id === product.id);
-                if (selectedProduct) {
-                    selectedProduct.quantity += this.quantity;
-                }
-                else {
-                    products.push({
-                        ...product,
-                        stallName: stall.name,
-                        quantity: this.quantity,
-                        available: product.quantity
-                    });
-                }
-                localStorage.setItem(key, JSON.stringify(products));
-            }
-            if (this.onProductAdded)
-                this.onProductAdded(product.stallId);
+        async handleAddToCart() {
+            this.btnAddToCart.rightIcon.spin = true;
+            this.btnAddToCart.rightIcon.visible = true;
+            this.btnAddToCart.caption = "";
+            this.model.addToCart(this.quantity, async (stallId) => {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                this.btnAddToCart.caption = "Add to Cart";
+                this.btnAddToCart.rightIcon.spin = false;
+                this.btnAddToCart.rightIcon.visible = false;
+                if (this.onProductAdded)
+                    this.onProductAdded(stallId);
+            });
         }
         init() {
             super.init();
@@ -629,6 +642,19 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.detailModule.show();
             modal.refresh();
         }
+        handleAddToCart() {
+            this.btnAddToCart.rightIcon.spin = true;
+            this.btnAddToCart.rightIcon.visible = true;
+            this.btnAddToCart.caption = "";
+            this.model.addToCart(1, async (stallId) => {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                this.btnAddToCart.caption = "Add to Cart";
+                this.btnAddToCart.rightIcon.spin = false;
+                this.btnAddToCart.rightIcon.visible = false;
+                if (this.onProductAdded)
+                    this.onProductAdded(stallId);
+            });
+        }
         init() {
             this.i18n.init({ ...translations_json_1.default });
             super.init();
@@ -644,7 +670,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
-                        this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem" }, lineHeight: "1.25rem" })))));
+                        this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" })),
+                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "Add to Cart", padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
         }
     };
     ScomProduct = __decorate([

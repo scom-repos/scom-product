@@ -171,36 +171,17 @@ export class ScomProductDetail extends Module {
         this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
     }
 
-    private handleAddToCart() {
-        const logginedUserStr = localStorage.getItem('loggedInUser');
-        if (!logginedUserStr) return;
-        const logginedUser = JSON.parse(logginedUserStr);
-        const { product, stall } = this.model.getData() || {};
-        const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
-        const productStr = localStorage.getItem(key);
-        if (!productStr) {
-            localStorage.setItem(key, JSON.stringify([{
-                ...product,
-                stallName: stall.name,
-                quantity: this.quantity,
-                available: product.quantity
-            }]));
-        } else {
-            const products = JSON.parse(productStr) || [];
-            const selectedProduct = products.find(p => p.id === product.id);
-            if (selectedProduct) {
-                selectedProduct.quantity += this.quantity;
-            } else {
-                products.push({
-                    ...product,
-                    stallName: stall.name,
-                    quantity: this.quantity,
-                    available: product.quantity
-                });
-            }
-            localStorage.setItem(key, JSON.stringify(products));
-        }
-        if (this.onProductAdded) this.onProductAdded(product.stallId);
+    private async handleAddToCart() {
+        this.btnAddToCart.rightIcon.spin = true;
+        this.btnAddToCart.rightIcon.visible = true;
+        this.btnAddToCart.caption = "";
+        this.model.addToCart(this.quantity, async(stallId: string) => {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            this.btnAddToCart.caption = "Add to Cart";
+            this.btnAddToCart.rightIcon.spin = false;
+            this.btnAddToCart.rightIcon.visible = false;
+            if (this.onProductAdded) this.onProductAdded(stallId);
+        });
     }
 
     init() {

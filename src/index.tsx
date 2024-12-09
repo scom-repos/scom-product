@@ -7,15 +7,19 @@ import {
     Module,
     Styles,
 } from '@ijstech/components';
+import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { cardStyle, imageStyle } from './index.css';
-import { IProductInfo } from './interface';
+import { IProductConfig, IProductInfo } from './interface';
 import { ProductModel } from './model';
 import { ScomProductDetail } from './productDetail';
 import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 
-interface ScomProductElement extends ControlElement { }
+interface ScomProductElement extends ControlElement {
+    config?: IProductConfig;
+    product?: ICommunityProductInfo;
+}
 
 declare global {
     namespace JSX {
@@ -113,6 +117,11 @@ export class ScomProduct extends Module {
         super.init();
         this.model = new ProductModel();
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
+        const config = this.getAttribute('config', true);
+        const product = this.getAttribute('product', true);
+        if (config) {
+            this.setData({ config, product });
+        }
     }
 
     render() {
@@ -121,7 +130,8 @@ export class ScomProduct extends Module {
                 <i-stack
                     class={cardStyle}
                     direction="vertical"
-                    width="24rem"
+                    width="100%"
+                    maxWidth="24rem"
                     background={{ color: Theme.background.paper }}
                     margin={{ left: 'auto', right: 'auto' }}
                     border={{ radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }}

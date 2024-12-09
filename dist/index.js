@@ -660,10 +660,15 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             super.init();
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
+            const config = this.getAttribute('config', true);
+            const product = this.getAttribute('product', true);
+            if (config) {
+                this.setData({ config, product });
+            }
         }
         render() {
             return (this.$render("i-panel", { width: "100%", height: "100%" },
-                this.$render("i-stack", { class: index_css_2.cardStyle, direction: "vertical", width: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
+                this.$render("i-stack", { class: index_css_2.cardStyle, direction: "vertical", width: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
                     this.$render("i-stack", { direction: "horizontal", width: "100%", height: "100%", stack: { shrink: '0' }, overflow: "hidden" },
                         this.$render("i-panel", { width: "100%", height: 0, overflow: "hidden", padding: { bottom: "100%" }, background: { color: Theme.action.disabledBackground } },
                             this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" }))),

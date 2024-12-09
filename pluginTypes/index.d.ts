@@ -194,8 +194,11 @@ declare module "@scom/scom-product/translations.json.ts" {
 /// <amd-module name="@scom/scom-product" />
 declare module "@scom/scom-product" {
     import { ControlElement, Module } from '@ijstech/components';
-    import { IProductInfo } from "@scom/scom-product/interface.ts";
+    import { ICommunityProductInfo } from '@scom/scom-social-sdk';
+    import { IProductConfig, IProductInfo } from "@scom/scom-product/interface.ts";
     interface ScomProductElement extends ControlElement {
+        config?: IProductConfig;
+        product?: ICommunityProductInfo;
     }
     global {
         namespace JSX {

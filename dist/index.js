@@ -670,15 +670,16 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         }
         render() {
             return (this.$render("i-panel", { width: "100%", height: "100%" },
-                this.$render("i-stack", { class: index_css_2.cardStyle, direction: "vertical", width: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
-                    this.$render("i-stack", { direction: "horizontal", width: "100%", height: "100%", stack: { shrink: '0' }, overflow: "hidden" },
-                        this.$render("i-panel", { width: "100%", height: 0, overflow: "hidden", padding: { bottom: "100%" }, background: { color: Theme.action.disabledBackground } },
-                            this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" }))),
+                this.$render("i-stack", { class: index_css_2.cardStyle, direction: "vertical", width: "100%", height: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
+                    this.$render("i-panel", null,
+                        this.$render("i-stack", { direction: "horizontal", width: "100%", height: "100%", stack: { shrink: '0' }, overflow: "hidden" },
+                            this.$render("i-panel", { width: "100%", height: 0, overflow: "hidden", padding: { bottom: "100%" }, background: { color: Theme.action.disabledBackground } },
+                                this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" })))),
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" })),
-                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "Add to Cart", padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
+                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "Add to Cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
         }
     };
     ScomProduct = __decorate([

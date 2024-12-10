@@ -103,7 +103,7 @@ export class ScomProduct extends Module {
         this.btnAddToCart.rightIcon.spin = true;
         this.btnAddToCart.rightIcon.visible = true;
         this.btnAddToCart.caption = "";
-        this.model.addToCart(1, async(stallId: string) => {
+        this.model.addToCart(1, async (stallId: string) => {
             await new Promise(resolve => setTimeout(resolve, 800));
             this.btnAddToCart.caption = "Add to Cart";
             this.btnAddToCart.rightIcon.spin = false;
@@ -131,6 +131,7 @@ export class ScomProduct extends Module {
                     class={cardStyle}
                     direction="vertical"
                     width="100%"
+                    height="100%"
                     maxWidth="24rem"
                     background={{ color: Theme.background.paper }}
                     margin={{ left: 'auto', right: 'auto' }}
@@ -139,33 +140,35 @@ export class ScomProduct extends Module {
                     cursor='pointer'
                     onClick={this.handleProductClick}
                 >
-                    <i-stack
-                        direction="horizontal"
-                        width="100%"
-                        height="100%"
-                        stack={{ shrink: '0' }}
-                        overflow="hidden"
-                    >
-                        <i-panel
+                    <i-panel>
+                        <i-stack
+                            direction="horizontal"
                             width="100%"
-                            height={0}
+                            height="100%"
+                            stack={{ shrink: '0' }}
                             overflow="hidden"
-                            padding={{ bottom: "100%" }}
-                            background={{ color: Theme.action.disabledBackground }}
                         >
-                            <i-image
-                                id="imgProduct"
-                                class={imageStyle}
-                                position="absolute"
-                                display="block"
+                            <i-panel
                                 width="100%"
-                                height="100%"
-                                top="100%"
-                                left={0}
-                                objectFit="cover"
-                            ></i-image>
-                        </i-panel>
-                    </i-stack>
+                                height={0}
+                                overflow="hidden"
+                                padding={{ bottom: "100%" }}
+                                background={{ color: Theme.action.disabledBackground }}
+                            >
+                                <i-image
+                                    id="imgProduct"
+                                    class={imageStyle}
+                                    position="absolute"
+                                    display="block"
+                                    width="100%"
+                                    height="100%"
+                                    top="100%"
+                                    left={0}
+                                    objectFit="cover"
+                                ></i-image>
+                            </i-panel>
+                        </i-stack>
+                    </i-panel>
                     <i-stack
                         direction="vertical"
                         alignItems="center"
@@ -195,6 +198,7 @@ export class ScomProduct extends Module {
                         minHeight={40}
                         width="100%"
                         caption="Add to Cart"
+                        margin={{ top: 'auto' }}
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
                         font={{ color: Theme.colors.primary.contrastText, bold: true }}
                         onClick={this.handleAddToCart}

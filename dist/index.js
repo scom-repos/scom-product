@@ -91,7 +91,35 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
 });
-define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/utils.ts"], function (require, exports, components_3, utils_1) {
+define("@scom/scom-product/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-product/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "stock": "Stock",
+            "community": "Community",
+            "product": "Product",
+            "stall": "Stall",
+            "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
+        },
+        "zh-hant": {
+            "stock": "庫存",
+            "community": "社群",
+            "product": "產品",
+            "stall": "攤位",
+            "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱"
+        },
+        "vi": {
+            "stock": "số lượng hàng tồn kho",
+            "community": "Cộng đồng",
+            "product": "Sản phẩm",
+            "stall": "Gian hàng",
+            "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS"
+        }
+    };
+});
+define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/utils.ts", "@scom/scom-product/translations.json.ts"], function (require, exports, components_3, utils_1, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProductConfigInput = void 0;
@@ -187,12 +215,13 @@ define("@scom/scom-product/configInput.tsx", ["require", "exports", "@ijstech/co
                 this['onChanged']();
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             super.init();
             this.fetchCommunityProducts = this.fetchCommunityProducts.bind(this);
         }
         render() {
             return (this.$render("i-stack", { direction: "vertical" },
-                this.$render("i-input", { id: "edtCommunityUri", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "Community Id/Creator's npub or ENS name", onChanged: this.handleCommunityUriChanged }),
+                this.$render("i-input", { id: "edtCommunityUri", width: "100%", height: 42, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, border: { radius: '0.625rem' }, placeholder: "$community_id/creator's_npub_or_ens_name", onChanged: this.handleCommunityUriChanged }),
                 this.$render("i-panel", { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
                     this.$render("i-stack", { direction: "vertical", width: "100%", margin: { bottom: 5 }, gap: 5 },
                         this.$render("i-stack", { direction: "horizontal", width: "100%", alignItems: "center", gap: 2 },
@@ -560,32 +589,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
     ], ScomProductDetail);
     exports.ScomProductDetail = ScomProductDetail;
 });
-define("@scom/scom-product/translations.json.ts", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    ///<amd-module name='@scom/scom-product/translations.json.ts'/> 
-    exports.default = {
-        "en": {
-            "stock": "Stock",
-            "community": "Community",
-            "product": "Product",
-            "stall": "Stall"
-        },
-        "zh-hant": {
-            "stock": "庫存",
-            "community": "社群",
-            "product": "產品",
-            "stall": "攤位"
-        },
-        "vi": {
-            "stock": "số lượng hàng tồn kho",
-            "community": "Cộng đồng",
-            "product": "Sản phẩm",
-            "stall": "Gian hàng"
-        }
-    };
-});
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_1) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -658,7 +662,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             });
         }
         init() {
-            this.i18n.init({ ...translations_json_1.default });
+            this.i18n.init({ ...translations_json_2.default });
             super.init();
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);

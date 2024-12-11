@@ -30,6 +30,33 @@ declare module "@scom/scom-product/utils.ts" {
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
     export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
 }
+/// <amd-module name="@scom/scom-product/translations.json.ts" />
+declare module "@scom/scom-product/translations.json.ts" {
+    const _default: {
+        en: {
+            stock: string;
+            community: string;
+            product: string;
+            stall: string;
+            "community_id/creator's_npub_or_ens_name": string;
+        };
+        "zh-hant": {
+            stock: string;
+            community: string;
+            product: string;
+            stall: string;
+            "community_id/creator's_npub_or_ens_name": string;
+        };
+        vi: {
+            stock: string;
+            community: string;
+            product: string;
+            stall: string;
+            "community_id/creator's_npub_or_ens_name": string;
+        };
+    };
+    export default _default;
+}
 /// <amd-module name="@scom/scom-product/configInput.tsx" />
 declare module "@scom/scom-product/configInput.tsx" {
     import { ControlElement, Module } from '@ijstech/components';
@@ -66,7 +93,7 @@ declare module "@scom/scom-product/configInput.tsx" {
 /// <amd-module name="@scom/scom-product/formSchema.ts" />
 declare module "@scom/scom-product/formSchema.ts" {
     import { ScomProductConfigInput } from "@scom/scom-product/configInput.tsx";
-    const _default: {
+    const _default_1: {
         dataSchema: {
             type: string;
             properties: {
@@ -97,7 +124,7 @@ declare module "@scom/scom-product/formSchema.ts" {
             };
         };
     };
-    export default _default;
+    export default _default_1;
 }
 /// <amd-module name="@scom/scom-product/model.ts" />
 declare module "@scom/scom-product/model.ts" {
@@ -166,30 +193,6 @@ declare module "@scom/scom-product/productDetail.tsx" {
         init(): void;
         render(): any;
     }
-}
-/// <amd-module name="@scom/scom-product/translations.json.ts" />
-declare module "@scom/scom-product/translations.json.ts" {
-    const _default_1: {
-        en: {
-            stock: string;
-            community: string;
-            product: string;
-            stall: string;
-        };
-        "zh-hant": {
-            stock: string;
-            community: string;
-            product: string;
-            stall: string;
-        };
-        vi: {
-            stock: string;
-            community: string;
-            product: string;
-            stall: string;
-        };
-    };
-    export default _default_1;
 }
 /// <amd-module name="@scom/scom-product" />
 declare module "@scom/scom-product" {

@@ -12,6 +12,7 @@ import {
 import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { IProductConfig } from './interface';
 import { fetchCommunityProducts, fetchCommunityStalls, getCommunityBasicInfoFromUri } from './utils';
+import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -116,6 +117,7 @@ export class ScomProductConfigInput extends Module {
     }
 
     init() {
+        this.i18n.init({...translations});
         super.init();
         this.fetchCommunityProducts = this.fetchCommunityProducts.bind(this);
     }
@@ -129,7 +131,7 @@ export class ScomProductConfigInput extends Module {
                     height={42}
                     padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
                     border={{ radius: '0.625rem' }}
-                    placeholder="Community Id/Creator's npub or ENS name"
+                    placeholder="$community_id/creator's_npub_or_ens_name"
                     onChanged={this.handleCommunityUriChanged}
                 ></i-input>
                 <i-panel padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>

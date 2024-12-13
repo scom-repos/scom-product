@@ -13,6 +13,7 @@ import {
 } from '@ijstech/components';
 import { imageListStyle, numberInputStyle } from './index.css';
 import { ProductModel } from './model';
+import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -177,7 +178,7 @@ export class ScomProductDetail extends Module {
         this.btnAddToCart.caption = "";
         this.model.addToCart(this.quantity, async(stallId: string) => {
             await new Promise(resolve => setTimeout(resolve, 800));
-            this.btnAddToCart.caption = "Add to Cart";
+            this.btnAddToCart.caption = "$add_to_cart";
             this.btnAddToCart.rightIcon.spin = false;
             this.btnAddToCart.rightIcon.visible = false;
             if (this.onProductAdded) this.onProductAdded(stallId);
@@ -185,6 +186,7 @@ export class ScomProductDetail extends Module {
     }
 
     init() {
+        this.i18n.init({ ...translations });
         super.init();
         this.updateQuantity = this.updateQuantity.bind(this);
     }
@@ -334,7 +336,7 @@ export class ScomProductDetail extends Module {
                             id="btnAddToCart"
                             minHeight={36}
                             minWidth={120}
-                            caption="Add to Cart"
+                            caption="$add_to_cart"
                             border={{ radius: 18 }}
                             padding={{ top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }}
                             font={{ color: Theme.colors.primary.contrastText, bold: true }}

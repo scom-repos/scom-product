@@ -102,20 +102,23 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "product": "Product",
             "stall": "Stall",
             "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
+            "add_to_cart": "Add to Cart",
         },
         "zh-hant": {
             "stock": "庫存",
             "community": "社群",
             "product": "產品",
             "stall": "攤位",
-            "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱"
+            "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
+            "add_to_cart": "加入購物車",
         },
         "vi": {
             "stock": "số lượng hàng tồn kho",
             "community": "Cộng đồng",
             "product": "Sản phẩm",
             "stall": "Gian hàng",
-            "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS"
+            "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
+            "add_to_cart": "Thêm vào giỏ hàng",
         }
     };
 });
@@ -395,7 +398,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts"], function (require, exports, components_4, index_css_1) {
+define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/translations.json.ts"], function (require, exports, components_4, index_css_1, translations_json_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProductDetail = void 0;
@@ -514,7 +517,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.btnAddToCart.caption = "";
             this.model.addToCart(this.quantity, async (stallId) => {
                 await new Promise(resolve => setTimeout(resolve, 800));
-                this.btnAddToCart.caption = "Add to Cart";
+                this.btnAddToCart.caption = "$add_to_cart";
                 this.btnAddToCart.rightIcon.spin = false;
                 this.btnAddToCart.rightIcon.visible = false;
                 if (this.onProductAdded)
@@ -522,6 +525,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             });
         }
         init() {
+            this.i18n.init({ ...translations_json_2.default });
             super.init();
             this.updateQuantity = this.updateQuantity.bind(this);
         }
@@ -581,7 +585,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                             this.$render("i-icon", { id: "iconMinus", width: '1.875rem', height: '1.875rem', name: 'minus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.decreaseQuantity }),
                             this.$render("i-input", { id: "edtQuantity", class: index_css_1.numberInputStyle, width: 100, height: '2rem', inputType: "number", padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, onChanged: this.handleQuantityChanged }),
                             this.$render("i-icon", { id: "iconPlus", width: '1.875rem', height: '1.875rem', name: 'plus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.increaseQuantity })),
-                        this.$render("i-button", { id: "btnAddToCart", minHeight: 36, minWidth: 120, caption: "Add to Cart", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, enabled: false, onClick: this.handleAddToCart })))));
+                        this.$render("i-button", { id: "btnAddToCart", minHeight: 36, minWidth: 120, caption: "$add_to_cart", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, enabled: false, onClick: this.handleAddToCart })))));
         }
     };
     ScomProductDetail = __decorate([
@@ -589,7 +593,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
     ], ScomProductDetail);
     exports.ScomProductDetail = ScomProductDetail;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_2) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -654,7 +658,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.btnAddToCart.caption = "";
             this.model.addToCart(1, async (stallId) => {
                 await new Promise(resolve => setTimeout(resolve, 800));
-                this.btnAddToCart.caption = "Add to Cart";
+                this.btnAddToCart.caption = "$add_to_cart";
                 this.btnAddToCart.rightIcon.spin = false;
                 this.btnAddToCart.rightIcon.visible = false;
                 if (this.onProductAdded)
@@ -662,7 +666,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             });
         }
         init() {
-            this.i18n.init({ ...translations_json_2.default });
+            this.i18n.init({ ...translations_json_3.default });
             super.init();
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
@@ -683,7 +687,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" })),
-                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "Add to Cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
+                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
         }
     };
     ScomProduct = __decorate([

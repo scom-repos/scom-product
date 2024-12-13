@@ -105,7 +105,7 @@ export class ScomProduct extends Module {
         this.btnAddToCart.caption = "";
         this.model.addToCart(1, async (stallId: string) => {
             await new Promise(resolve => setTimeout(resolve, 800));
-            this.btnAddToCart.caption = "Add to Cart";
+            this.btnAddToCart.caption = "$add_to_cart";
             this.btnAddToCart.rightIcon.spin = false;
             this.btnAddToCart.rightIcon.visible = false;
             if (this.onProductAdded) this.onProductAdded(stallId);
@@ -197,7 +197,7 @@ export class ScomProduct extends Module {
                         id="btnAddToCart"
                         minHeight={40}
                         width="100%"
-                        caption="Add to Cart"
+                        caption="$add_to_cart"
                         margin={{ top: 'auto' }}
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
                         font={{ color: Theme.colors.primary.contrastText, bold: true }}

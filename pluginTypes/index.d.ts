@@ -39,6 +39,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
+            add_to_cart: string;
         };
         "zh-hant": {
             stock: string;
@@ -46,6 +47,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
+            add_to_cart: string;
         };
         vi: {
             stock: string;
@@ -53,6 +55,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
+            add_to_cart: string;
         };
     };
     export default _default;

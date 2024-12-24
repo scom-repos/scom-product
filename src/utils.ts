@@ -27,6 +27,21 @@ export function getCommunityBasicInfoFromUri(communityUri: string) {
     }
 }
 
+export function getLoggedInUserId() {
+    const logginedUserStr = localStorage.getItem('loggedInUser');
+    if (!logginedUserStr) return;
+    const logginedUser = JSON.parse(logginedUserStr);
+    return logginedUser.id;
+}
+
+export async function fetchCommunities() {
+    const logginedUserId = getLoggedInUserId();
+    if (!logginedUserId) return [];
+    const dataManager: SocialDataManager = application.store?.mainDataManager;
+    const communities = await dataManager.fetchMyCommunities(logginedUserId);
+    return communities;
+}
+
 export async function fetchCommunityStalls(creatorId: string, communityId: string) {
     const dataManager: SocialDataManager = application.store?.mainDataManager;
     const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);

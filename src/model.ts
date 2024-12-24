@@ -1,6 +1,6 @@
 import formSchema from "./formSchema";
 import { IProductInfo } from "./interface";
-import { fetchCommunityProducts, fetchCommunityStalls } from "./utils";
+import { fetchCommunityProducts, fetchCommunityStalls, getLoggedInUserId } from "./utils";
 
 export class ProductModel {
   private _data: IProductInfo = {};
@@ -8,11 +8,10 @@ export class ProductModel {
   public updateUIBySetData: () => Promise<void>;
 
   addToCart(quantity: number, callback?: (stallId: string) => void) {
-    const logginedUserStr = localStorage.getItem('loggedInUser');
-    if (!logginedUserStr) return;
-    const logginedUser = JSON.parse(logginedUserStr);
+    const logginedUserId = getLoggedInUserId();
+    if (!logginedUserId) return;
     const { product, stall } = this.getData() || {};
-    const key = `shoppingCart/${logginedUser.id}/${product.stallId}`;
+    const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
     const productStr = localStorage.getItem(key);
     if (!productStr) {
       localStorage.setItem(key, JSON.stringify([{
@@ -63,7 +62,7 @@ export class ProductModel {
       }
       if (!stall) {
         const stalls = await fetchCommunityStalls(config.creatorId, config.communityId);
-        this._data.stall = stalls?.find(stall => stall.id === this._data.product.stallId);
+        this._data.stall = stalls?.find(stall => stall.id === this._data.product?.stallId);
       }
     }
     if (this.updateUIBySetData) this.updateUIBySetData();

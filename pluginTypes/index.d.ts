@@ -27,6 +27,8 @@ declare module "@scom/scom-product/utils.ts" {
         creatorId?: string;
         communityId?: string;
     };
+    export function getLoggedInUserId(): any;
+    export function fetchCommunities(): Promise<import("@scom/scom-social-sdk").ICommunity[]>;
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
     export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
 }
@@ -36,6 +38,8 @@ declare module "@scom/scom-product/translations.json.ts" {
         en: {
             stock: string;
             community: string;
+            other_community: string;
+            other: string;
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
@@ -44,6 +48,8 @@ declare module "@scom/scom-product/translations.json.ts" {
         "zh-hant": {
             stock: string;
             community: string;
+            other_community: string;
+            other: string;
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
@@ -52,6 +58,8 @@ declare module "@scom/scom-product/translations.json.ts" {
         vi: {
             stock: string;
             community: string;
+            other_community: string;
+            other: string;
             product: string;
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
@@ -72,11 +80,14 @@ declare module "@scom/scom-product/configInput.tsx" {
         }
     }
     export class ScomProductConfigInput extends Module {
+        private comboCommunity;
+        private pnlOtherCommunity;
         private edtCommunityUri;
         private comboStallId;
         private comboProductId;
         private timeout;
         private config;
+        private communities;
         getData(): {
             creatorId: string;
             communityId: string;
@@ -84,12 +95,19 @@ declare module "@scom/scom-product/configInput.tsx" {
             productId: string;
         };
         setData(data: IProductConfig): Promise<void>;
+        getCommunityItems(): Promise<{
+            label: string;
+            value: string;
+        }[]>;
         private fetchCommunityStalls;
         private fetchCommunityProducts;
+        private clearStall;
+        private clearProduct;
+        private handleCommunityChanged;
         private handleCommunityUriChanged;
         private handleStallIdChanged;
         private handleProductIdChanged;
-        init(): void;
+        init(): Promise<void>;
         render(): any;
     }
 }

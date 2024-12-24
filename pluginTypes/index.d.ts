@@ -214,6 +214,7 @@ declare module "@scom/scom-product" {
         }
     }
     export class ScomProduct extends Module {
+        private pnlProduct;
         private imgProduct;
         private lblName;
         private lblDescription;
@@ -221,7 +222,10 @@ declare module "@scom/scom-product" {
         private btnAddToCart;
         private model;
         private detailModule;
+        private _isPreview;
         onProductAdded: (stallId: string) => void;
+        get isPreview(): boolean;
+        set isPreview(value: boolean);
         getConfigurators(): {
             name: string;
             target: string;

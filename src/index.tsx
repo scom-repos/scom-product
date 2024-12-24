@@ -5,6 +5,7 @@ import {
     Image,
     Label,
     Module,
+    StackLayout,
     Styles,
 } from '@ijstech/components';
 import { ICommunityProductInfo } from '@scom/scom-social-sdk';
@@ -31,6 +32,7 @@ declare global {
 
 @customElements('i-scom-product')
 export class ScomProduct extends Module {
+    private pnlProduct: StackLayout;
     private imgProduct: Image;
     private lblName: Label;
     private lblDescription: Label;
@@ -38,7 +40,18 @@ export class ScomProduct extends Module {
     private btnAddToCart: Button;
     private model: ProductModel;
     private detailModule: ScomProductDetail;
+    private _isPreview = false;
     onProductAdded: (stallId: string) => void;
+    
+    get isPreview() {
+        return this._isPreview;
+    }
+
+    set isPreview(value: boolean) {
+        this._isPreview = value;
+        if (this.pnlProduct) this.pnlProduct.cursor = value ? "default" : "pointer";
+        if (this.btnAddToCart) this.btnAddToCart.enabled = !value;
+    }
 
     getConfigurators() {
         return this.model.getConfigurators()
@@ -70,6 +83,7 @@ export class ScomProduct extends Module {
     }
 
     private async handleProductClick() {
+        if (this.isPreview) return;
         if (!this.detailModule) {
             this.detailModule = new ScomProductDetail();
             this.detailModule.model = this.model;
@@ -100,6 +114,7 @@ export class ScomProduct extends Module {
     }
 
     private handleAddToCart() {
+        if (this.isPreview) return;
         this.btnAddToCart.rightIcon.spin = true;
         this.btnAddToCart.rightIcon.visible = true;
         this.btnAddToCart.caption = "";
@@ -115,6 +130,8 @@ export class ScomProduct extends Module {
     init() {
         this.i18n.init({ ...translations });
         super.init();
+        const isPreview = this.getAttribute('isPreview', true);
+        if (isPreview != null) this.isPreview = isPreview;
         this.model = new ProductModel();
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
         const config = this.getAttribute('config', true);
@@ -128,6 +145,7 @@ export class ScomProduct extends Module {
         return (
             <i-panel width="100%" height="100%">
                 <i-stack
+                    id="pnlProduct"
                     class={cardStyle}
                     direction="vertical"
                     width="100%"

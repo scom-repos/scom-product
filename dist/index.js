@@ -599,6 +599,20 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
     exports.ScomProduct = void 0;
     const Theme = components_5.Styles.Theme.ThemeVars;
     let ScomProduct = class ScomProduct extends components_5.Module {
+        constructor() {
+            super(...arguments);
+            this._isPreview = false;
+        }
+        get isPreview() {
+            return this._isPreview;
+        }
+        set isPreview(value) {
+            this._isPreview = value;
+            if (this.pnlProduct)
+                this.pnlProduct.cursor = value ? "default" : "pointer";
+            if (this.btnAddToCart)
+                this.btnAddToCart.enabled = !value;
+        }
         getConfigurators() {
             return this.model.getConfigurators();
         }
@@ -623,6 +637,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         }
         async handleProductClick() {
+            if (this.isPreview)
+                return;
             if (!this.detailModule) {
                 this.detailModule = new productDetail_1.ScomProductDetail();
                 this.detailModule.model = this.model;
@@ -653,6 +669,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             modal.refresh();
         }
         handleAddToCart() {
+            if (this.isPreview)
+                return;
             this.btnAddToCart.rightIcon.spin = true;
             this.btnAddToCart.rightIcon.visible = true;
             this.btnAddToCart.caption = "";
@@ -668,6 +686,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         init() {
             this.i18n.init({ ...translations_json_3.default });
             super.init();
+            const isPreview = this.getAttribute('isPreview', true);
+            if (isPreview != null)
+                this.isPreview = isPreview;
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
             const config = this.getAttribute('config', true);
@@ -678,7 +699,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         }
         render() {
             return (this.$render("i-panel", { width: "100%", height: "100%" },
-                this.$render("i-stack", { class: index_css_2.cardStyle, direction: "vertical", width: "100%", height: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
+                this.$render("i-stack", { id: "pnlProduct", class: index_css_2.cardStyle, direction: "vertical", width: "100%", height: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
                     this.$render("i-panel", null,
                         this.$render("i-stack", { direction: "horizontal", width: "100%", height: "100%", stack: { shrink: '0' }, overflow: "hidden" },
                             this.$render("i-panel", { width: "100%", height: 0, overflow: "hidden", padding: { bottom: "100%" }, background: { color: Theme.action.disabledBackground } },

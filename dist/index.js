@@ -482,6 +482,10 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
             ];
             return actions;
         }
+        get isLoggedIn() {
+            const loggedInUserStr = localStorage.getItem('loggedInUser');
+            return !!loggedInUserStr;
+        }
     }
     exports.ProductModel = ProductModel;
 });
@@ -696,9 +700,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         set isPreview(value) {
             this._isPreview = value;
             if (this.pnlProduct)
-                this.pnlProduct.cursor = value ? "default" : "pointer";
+                this.pnlProduct.cursor = value || !this.model.isLoggedIn ? "default" : "pointer";
             if (this.btnAddToCart)
-                this.btnAddToCart.enabled = !value;
+                this.btnAddToCart.enabled = !value && this.model.isLoggedIn;
         }
         getConfigurators() {
             return this.model.getConfigurators();
@@ -724,7 +728,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         }
         async handleProductClick() {
-            if (this.isPreview)
+            if (this.isPreview || !this.model.isLoggedIn)
                 return;
             if (!this.detailModule) {
                 this.detailModule = new productDetail_1.ScomProductDetail();
@@ -773,11 +777,13 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         init() {
             this.i18n.init({ ...translations_json_3.default });
             super.init();
+            this.model = new model_1.ProductModel();
+            this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
+            this.btnAddToCart.enabled = this.model.isLoggedIn;
+            this.pnlProduct.cursor = this.model.isLoggedIn ? 'pointer' : 'default';
             const isPreview = this.getAttribute('isPreview', true);
             if (isPreview != null)
                 this.isPreview = isPreview;
-            this.model = new model_1.ProductModel();
-            this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
             const config = this.getAttribute('config', true);
             const product = this.getAttribute('product', true);
             if (config) {

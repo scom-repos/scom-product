@@ -42,15 +42,15 @@ export class ScomProduct extends Module {
     private detailModule: ScomProductDetail;
     private _isPreview = false;
     onProductAdded: (stallId: string) => void;
-    
+
     get isPreview() {
         return this._isPreview;
     }
 
     set isPreview(value: boolean) {
         this._isPreview = value;
-        if (this.pnlProduct) this.pnlProduct.cursor = value ? "default" : "pointer";
-        if (this.btnAddToCart) this.btnAddToCart.enabled = !value;
+        if (this.pnlProduct) this.pnlProduct.cursor = value || !this.model.isLoggedIn ? "default" : "pointer";
+        if (this.btnAddToCart) this.btnAddToCart.enabled = !value && this.model.isLoggedIn;
     }
 
     getConfigurators() {
@@ -83,7 +83,7 @@ export class ScomProduct extends Module {
     }
 
     private async handleProductClick() {
-        if (this.isPreview) return;
+        if (this.isPreview || !this.model.isLoggedIn) return;
         if (!this.detailModule) {
             this.detailModule = new ScomProductDetail();
             this.detailModule.model = this.model;
@@ -130,10 +130,12 @@ export class ScomProduct extends Module {
     init() {
         this.i18n.init({ ...translations });
         super.init();
-        const isPreview = this.getAttribute('isPreview', true);
-        if (isPreview != null) this.isPreview = isPreview;
         this.model = new ProductModel();
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
+        this.btnAddToCart.enabled = this.model.isLoggedIn;
+        this.pnlProduct.cursor = this.model.isLoggedIn ? 'pointer' : 'default';
+        const isPreview = this.getAttribute('isPreview', true);
+        if (isPreview != null) this.isPreview = isPreview;
         const config = this.getAttribute('config', true);
         const product = this.getAttribute('product', true);
         if (config) {

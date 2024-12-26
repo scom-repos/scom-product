@@ -169,6 +169,7 @@ declare module "@scom/scom-product/model.ts" {
         getTag(): any;
         setTag(value: any): void;
         private getActions;
+        get isLoggedIn(): boolean;
     }
 }
 /// <amd-module name="@scom/scom-product/productDetail.tsx" />

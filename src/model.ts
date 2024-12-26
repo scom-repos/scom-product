@@ -106,4 +106,9 @@ export class ProductModel {
     ]
     return actions;
   }
+
+  get isLoggedIn() {
+    const loggedInUserStr = localStorage.getItem('loggedInUser');
+    return !!loggedInUserStr;
+  }
 }

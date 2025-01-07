@@ -37,6 +37,7 @@ export class ScomProduct extends Module {
     private lblName: Label;
     private lblDescription: Label;
     private lblPrice: Label;
+    private lblAlreadyInCart: Label;
     private btnAddToCart: Button;
     private model: ProductModel;
     private detailModule: ScomProductDetail;
@@ -80,6 +81,14 @@ export class ScomProduct extends Module {
         this.lblDescription.caption = product?.description || "";
         this.lblDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+        this.updateCartButton();
+    }
+
+    private updateCartButton() {
+        const itemCount = this.model.getItemCountInCart();
+        this.lblAlreadyInCart.visible = itemCount > 0;
+        this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+        this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
     }
 
     private async handleProductClick() {
@@ -89,6 +98,7 @@ export class ScomProduct extends Module {
             this.detailModule.model = this.model;
             this.detailModule.onProductAdded = (stallId: string) => {
                 this.detailModule.closeModal();
+                this.updateCartButton();
                 if (this.onProductAdded) this.onProductAdded(stallId);
             }
         }
@@ -120,9 +130,9 @@ export class ScomProduct extends Module {
         this.btnAddToCart.caption = "";
         this.model.addToCart(1, async (stallId: string) => {
             await new Promise(resolve => setTimeout(resolve, 800));
-            this.btnAddToCart.caption = "$add_to_cart";
             this.btnAddToCart.rightIcon.spin = false;
             this.btnAddToCart.rightIcon.visible = false;
+            this.updateCartButton();
             if (this.onProductAdded) this.onProductAdded(stallId);
         });
     }
@@ -212,6 +222,7 @@ export class ScomProduct extends Module {
                             visible={false}
                         ></i-label>
                         <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem", weight: 600 }} lineHeight="1.25rem"></i-label>
+                        <i-label id="lblAlreadyInCart" class="text-center" font={{ color: Theme.colors.success.main, size: '0.9375rem' }} visible={false}></i-label>
                     </i-stack>
                     <i-button
                         id="btnAddToCart"

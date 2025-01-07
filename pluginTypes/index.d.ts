@@ -44,6 +44,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
+            buy_more: string;
+            already_in_cart: string;
         };
         "zh-hant": {
             stock: string;
@@ -54,6 +56,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
+            buy_more: string;
+            already_in_cart: string;
         };
         vi: {
             stock: string;
@@ -64,6 +68,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             stall: string;
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
+            buy_more: string;
+            already_in_cart: string;
         };
     };
     export default _default;
@@ -155,6 +161,7 @@ declare module "@scom/scom-product/model.ts" {
         private _tag;
         updateUIBySetData: () => Promise<void>;
         addToCart(quantity: number, callback?: (stallId: string) => void): void;
+        getItemCountInCart(): any;
         getConfigurators(): {
             name: string;
             target: string;
@@ -192,6 +199,7 @@ declare module "@scom/scom-product/productDetail.tsx" {
         private pnlStock;
         private lblStock;
         private lblPrice;
+        private lblAlreadyInCart;
         private edtQuantity;
         private iconMinus;
         private iconPlus;
@@ -238,6 +246,7 @@ declare module "@scom/scom-product" {
         private lblName;
         private lblDescription;
         private lblPrice;
+        private lblAlreadyInCart;
         private btnAddToCart;
         private model;
         private detailModule;
@@ -259,6 +268,7 @@ declare module "@scom/scom-product" {
         getTag(): any;
         setTag(value: any): void;
         private updateUIBySetData;
+        private updateCartButton;
         private handleProductClick;
         private handleAddToCart;
         init(): void;

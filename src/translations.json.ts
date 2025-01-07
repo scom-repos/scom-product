@@ -8,6 +8,8 @@ export default {
         "stall": "Stall",
         "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
         "add_to_cart": "Add to Cart",
+        "buy_more": "Buy More",
+        "already_in_cart": "You already have {{quantity}} in your cart",
     },
     "zh-hant": {
         "stock": "庫存",
@@ -18,6 +20,8 @@ export default {
         "stall": "攤位",
         "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
         "add_to_cart": "加入購物車",
+        "buy_more": "購買更多",
+        "already_in_cart": "您的購物車中已有{{quantity}}件",
     },
     "vi": {
         "stock": "số lượng hàng tồn kho",
@@ -28,5 +32,7 @@ export default {
         "stall": "Gian hàng",
         "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
         "add_to_cart": "Thêm vào giỏ hàng",
+        "buy_more": "Mua thêm",
+        "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng"
     }
 }

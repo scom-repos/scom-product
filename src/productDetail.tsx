@@ -35,6 +35,7 @@ export class ScomProductDetail extends Module {
     private pnlStock: Panel;
     private lblStock: Label;
     private lblPrice: Label;
+    private lblAlreadyInCart: Label;
     private edtQuantity: Input;
     private iconMinus: Icon;
     private iconPlus: Icon;
@@ -87,6 +88,10 @@ export class ScomProductDetail extends Module {
         this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
         const logginedUserStr = localStorage.getItem('loggedInUser');
         this.btnAddToCart.enabled = !!logginedUserStr;
+        const itemCount = this.model.getItemCountInCart();
+        this.lblAlreadyInCart.visible = itemCount > 0;
+        this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+        this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
     }
 
     clear() {
@@ -181,6 +186,9 @@ export class ScomProductDetail extends Module {
             this.btnAddToCart.caption = "$add_to_cart";
             this.btnAddToCart.rightIcon.spin = false;
             this.btnAddToCart.rightIcon.visible = false;
+            const itemCount = this.model.getItemCountInCart();
+            this.lblAlreadyInCart.visible = true;
+            this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
             if (this.onProductAdded) this.onProductAdded(stallId);
         });
     }
@@ -294,6 +302,7 @@ export class ScomProductDetail extends Module {
                             </i-panel>
                             <i-label id="lblPrice" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>
                         </i-stack>
+                        <i-label id="lblAlreadyInCart" class="text-center" font={{ color: Theme.colors.success.main, size: '1rem' }} visible={false}></i-label>
                         <i-stack direction="horizontal" justifyContent="center" gap="0.25rem">
                             <i-icon
                                 id="iconMinus"

@@ -122,6 +122,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "stall": "Stall",
             "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
             "add_to_cart": "Add to Cart",
+            "buy_more": "Buy More",
+            "already_in_cart": "You already have {{quantity}} in your cart",
         },
         "zh-hant": {
             "stock": "庫存",
@@ -132,6 +134,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "stall": "攤位",
             "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
             "add_to_cart": "加入購物車",
+            "buy_more": "購買更多",
+            "already_in_cart": "您的購物車中已有{{quantity}}件",
         },
         "vi": {
             "stock": "số lượng hàng tồn kho",
@@ -142,6 +146,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "stall": "Gian hàng",
             "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
             "add_to_cart": "Thêm vào giỏ hàng",
+            "buy_more": "Mua thêm",
+            "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng"
         }
     };
 });
@@ -416,6 +422,20 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
             if (callback)
                 callback(product.stallId);
         }
+        getItemCountInCart() {
+            const logginedUserId = (0, utils_2.getLoggedInUserId)();
+            if (!logginedUserId)
+                return;
+            const { product, stall } = this.getData() || {};
+            const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
+            const productStr = localStorage.getItem(key);
+            if (productStr) {
+                const products = JSON.parse(productStr) || [];
+                const selectedProduct = products.find(p => p.id === product.id);
+                return selectedProduct?.quantity || 0;
+            }
+            return 0;
+        }
         getConfigurators() {
             return [
                 {
@@ -536,6 +556,10 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
             const logginedUserStr = localStorage.getItem('loggedInUser');
             this.btnAddToCart.enabled = !!logginedUserStr;
+            const itemCount = this.model.getItemCountInCart();
+            this.lblAlreadyInCart.visible = itemCount > 0;
+            this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+            this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         clear() {
             this.lblName.caption = "";
@@ -611,6 +635,9 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 this.btnAddToCart.caption = "$add_to_cart";
                 this.btnAddToCart.rightIcon.spin = false;
                 this.btnAddToCart.rightIcon.visible = false;
+                const itemCount = this.model.getItemCountInCart();
+                this.lblAlreadyInCart.visible = true;
+                this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
                 if (this.onProductAdded)
                     this.onProductAdded(stallId);
             });
@@ -672,6 +699,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                                 this.$render("i-label", { display: "inline", caption: "$stock", font: { size: '1.5rem', color: Theme.text.secondary } }),
                                 this.$render("i-label", { id: "lblStock", font: { size: '1.5rem', color: Theme.text.secondary } })),
                             this.$render("i-label", { id: "lblPrice", font: { size: '1.5rem', color: Theme.text.secondary } })),
+                        this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '1rem' }, visible: false }),
                         this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "0.25rem" },
                             this.$render("i-icon", { id: "iconMinus", width: '1.875rem', height: '1.875rem', name: 'minus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.decreaseQuantity }),
                             this.$render("i-input", { id: "edtQuantity", class: index_css_1.numberInputStyle, width: 100, height: '2rem', inputType: "number", padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, onChanged: this.handleQuantityChanged }),
@@ -726,6 +754,13 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblDescription.caption = product?.description || "";
             this.lblDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+            this.updateCartButton();
+        }
+        updateCartButton() {
+            const itemCount = this.model.getItemCountInCart();
+            this.lblAlreadyInCart.visible = itemCount > 0;
+            this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+            this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         async handleProductClick() {
             if (this.isPreview || !this.model.isLoggedIn)
@@ -735,6 +770,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                 this.detailModule.model = this.model;
                 this.detailModule.onProductAdded = (stallId) => {
                     this.detailModule.closeModal();
+                    this.updateCartButton();
                     if (this.onProductAdded)
                         this.onProductAdded(stallId);
                 };
@@ -767,9 +803,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.btnAddToCart.caption = "";
             this.model.addToCart(1, async (stallId) => {
                 await new Promise(resolve => setTimeout(resolve, 800));
-                this.btnAddToCart.caption = "$add_to_cart";
                 this.btnAddToCart.rightIcon.spin = false;
                 this.btnAddToCart.rightIcon.visible = false;
+                this.updateCartButton();
                 if (this.onProductAdded)
                     this.onProductAdded(stallId);
             });
@@ -800,7 +836,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
-                        this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" })),
+                        this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" }),
+                        this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
                     this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
         }
     };

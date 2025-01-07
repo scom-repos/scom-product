@@ -37,6 +37,20 @@ export class ProductModel {
     }
     if (callback) callback(product.stallId);
   }
+  
+  getItemCountInCart() {
+    const logginedUserId = getLoggedInUserId();
+    if (!logginedUserId) return;
+    const { product, stall } = this.getData() || {};
+    const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
+    const productStr = localStorage.getItem(key);
+    if (productStr) {
+      const products = JSON.parse(productStr) || [];
+      const selectedProduct = products.find(p => p.id === product.id);
+      return selectedProduct?.quantity || 0;
+    }
+    return 0;
+  }
 
   getConfigurators() {
     return [

@@ -15,10 +15,10 @@ export class ProductModel {
     const productStr = localStorage.getItem(key);
     if (!productStr) {
       localStorage.setItem(key, JSON.stringify([{
-        ...product,
-        stallName: stall?.name || "",
+        id: product.id,
         quantity: quantity,
-        available: product.quantity
+        stallId: product.stallId,
+        communityUri: product.communityUri
       }]));
     } else {
       const products = JSON.parse(productStr) || [];
@@ -27,10 +27,10 @@ export class ProductModel {
         selectedProduct.quantity += quantity;
       } else {
         products.push({
-          ...product,
-          stallName: stall?.name || "",
+          id: product.id,
           quantity: quantity,
-          available: product.quantity
+          stallId: product.stallId,
+          communityUri: product.communityUri
         });
       }
       localStorage.setItem(key, JSON.stringify(products));

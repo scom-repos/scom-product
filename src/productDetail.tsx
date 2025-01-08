@@ -6,12 +6,13 @@ import {
     Image,
     Input,
     Label,
+    Markdown,
     Module,
     Panel,
     StackLayout,
     Styles,
 } from '@ijstech/components';
-import { imageListStyle, numberInputStyle } from './index.css';
+import { imageListStyle, markdownStyle, numberInputStyle } from './index.css';
 import { ProductModel } from './model';
 import translations from './translations.json';
 
@@ -31,7 +32,7 @@ export class ScomProductDetail extends Module {
     private pnlImageListWrapper: StackLayout;
     private pnlImages: StackLayout;
     private imgProduct: Image;
-    private lblDescription: Label;
+    private markdownViewer: Markdown;
     private pnlStock: Panel;
     private lblStock: Label;
     private lblPrice: Label;
@@ -64,7 +65,7 @@ export class ScomProductDetail extends Module {
         return null;
     }
 
-    show() {
+    async show() {
         this.pnlImageListWrapper.visible = false;
         this.activeImage = undefined;
         this.pnlImages.clearInnerHTML();
@@ -78,7 +79,7 @@ export class ScomProductDetail extends Module {
             }
             this.pnlImageListWrapper.visible = true;
         }
-        this.lblDescription.caption = product?.description || "";
+        this.markdownViewer.load(product?.description || "");
         const stockQuantity = this.getStockQuantity();
         this.lblStock.caption = stockQuantity ? ": " + stockQuantity : "";
         this.pnlStock.visible = stockQuantity > 1;
@@ -100,7 +101,7 @@ export class ScomProductDetail extends Module {
         this.activeImage = undefined;
         this.pnlImages.clearInnerHTML();
         this.imgProduct.url = "";
-        this.lblDescription.caption = "";
+        this.markdownViewer.load("");
         this.lblStock.caption = "";
         this.pnlStock.visible = false;
         this.lblPrice.caption = "";
@@ -294,7 +295,7 @@ export class ScomProductDetail extends Module {
                         ></i-image>
                     </i-stack>
                     <i-stack direction="vertical" width="100%" alignItems="center" gap="2rem">
-                        <i-label id="lblDescription" class="text-center" font={{ size: '1.125rem' }}></i-label>
+                        <i-markdown id='markdownViewer' class={markdownStyle} width='100%'></i-markdown>  
                         <i-stack direction="horizontal" justifyContent="center" gap="2rem">
                             <i-panel id="pnlStock" visible={false}>
                                 <i-label display="inline" caption="$stock" font={{ size: '1.5rem', color: Theme.text.secondary }}></i-label>

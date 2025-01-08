@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-product/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.imageListStyle = exports.numberInputStyle = exports.cardStyle = exports.imageStyle = void 0;
+    exports.markdownStyle = exports.imageListStyle = exports.numberInputStyle = exports.cardStyle = exports.imageStyle = void 0;
     const Theme = components_1.Styles.Theme.ThemeVars;
     exports.imageStyle = components_1.Styles.style({
         transform: 'translateY(-100%)',
@@ -41,6 +41,9 @@ define("@scom/scom-product/index.css.ts", ["require", "exports", "@ijstech/compo
                 borderColor: Theme.colors.error.main
             }
         }
+    });
+    exports.markdownStyle = components_1.Styles.style({
+        overflowWrap: 'break-word'
     });
 });
 define("@scom/scom-product/interface.ts", ["require", "exports"], function (require, exports) {
@@ -531,7 +534,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             }
             return null;
         }
-        show() {
+        async show() {
             this.pnlImageListWrapper.visible = false;
             this.activeImage = undefined;
             this.pnlImages.clearInnerHTML();
@@ -546,7 +549,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                 }
                 this.pnlImageListWrapper.visible = true;
             }
-            this.lblDescription.caption = product?.description || "";
+            this.markdownViewer.load(product?.description || "");
             const stockQuantity = this.getStockQuantity();
             this.lblStock.caption = stockQuantity ? ": " + stockQuantity : "";
             this.pnlStock.visible = stockQuantity > 1;
@@ -567,7 +570,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
             this.activeImage = undefined;
             this.pnlImages.clearInnerHTML();
             this.imgProduct.url = "";
-            this.lblDescription.caption = "";
+            this.markdownViewer.load("");
             this.lblStock.caption = "";
             this.pnlStock.visible = false;
             this.lblPrice.caption = "";
@@ -693,7 +696,7 @@ define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/
                                 ] })),
                         this.$render("i-image", { id: "imgProduct", display: "block", width: "100%", height: "auto", border: { radius: '0.75rem' }, overflow: "hidden" })),
                     this.$render("i-stack", { direction: "vertical", width: "100%", alignItems: "center", gap: "2rem" },
-                        this.$render("i-label", { id: "lblDescription", class: "text-center", font: { size: '1.125rem' } }),
+                        this.$render("i-markdown", { id: 'markdownViewer', class: index_css_1.markdownStyle, width: '100%' }),
                         this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "2rem" },
                             this.$render("i-panel", { id: "pnlStock", visible: false },
                                 this.$render("i-label", { display: "inline", caption: "$stock", font: { size: '1.5rem', color: Theme.text.secondary } }),
@@ -751,7 +754,12 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const { product } = this.getData() || {};
             this.imgProduct.url = product?.images?.[0] || "";
             this.lblName.caption = product?.name || "";
-            this.lblDescription.caption = product?.description || "";
+            if (product?.description) {
+                this.lblDescription.caption = await (0, components_5.markdownToPlainText)(product.description);
+            }
+            else {
+                this.lblDescription.caption = "";
+            }
             this.lblDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.updateCartButton();
@@ -835,7 +843,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                                 this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" })))),
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
-                        this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, textOverflow: 'ellipsis', lineHeight: '1.25rem', visible: false }),
+                        this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineClamp: 2, lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" }),
                         this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
                     this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));

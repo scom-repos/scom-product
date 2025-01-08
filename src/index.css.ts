@@ -38,3 +38,7 @@ export const imageListStyle = Styles.style({
         }
     }
 })
+
+export const markdownStyle = Styles.style({
+    overflowWrap: 'break-word'
+})

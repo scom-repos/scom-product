@@ -4,6 +4,7 @@ import {
     customElements,
     Image,
     Label,
+    markdownToPlainText,
     Module,
     StackLayout,
     Styles,
@@ -78,7 +79,11 @@ export class ScomProduct extends Module {
         const { product } = this.getData() || {};
         this.imgProduct.url = product?.images?.[0] || "";
         this.lblName.caption = product?.name || "";
-        this.lblDescription.caption = product?.description || "";
+        if (product?.description) {
+            this.lblDescription.caption = await markdownToPlainText(product.description);
+        } else {
+            this.lblDescription.caption = "";
+        }
         this.lblDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.updateCartButton();
@@ -217,7 +222,7 @@ export class ScomProduct extends Module {
                             width="100%"
                             class="text-center"
                             font={{ size: '1rem' }}
-                            textOverflow='ellipsis'
+                            lineClamp={2}
                             lineHeight={'1.25rem'}
                             visible={false}
                         ></i-label>

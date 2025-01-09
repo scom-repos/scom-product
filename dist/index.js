@@ -512,215 +512,12 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product/productDetail.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/translations.json.ts"], function (require, exports, components_4, index_css_1, translations_json_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ScomProductDetail = void 0;
-    const Theme = components_4.Styles.Theme.ThemeVars;
-    let ScomProductDetail = class ScomProductDetail extends components_4.Module {
-        get model() {
-            return this._model;
-        }
-        set model(value) {
-            this._model = value;
-        }
-        get quantity() {
-            return Number(this.edtQuantity.value) || 1;
-        }
-        getStockQuantity() {
-            const { product } = this.model.getData() || {};
-            if (product?.quantity != null && product?.quantity.toString() != "" && product?.quantity >= 0) {
-                return Number(product?.quantity);
-            }
-            return null;
-        }
-        async show() {
-            this.pnlImageListWrapper.visible = false;
-            this.activeImage = undefined;
-            this.pnlImages.clearInnerHTML();
-            const { product } = this.model.getData() || {};
-            this.lblName.caption = product?.name || "";
-            this.imgProduct.url = product?.images?.[0] || "";
-            if (product?.images?.length > 1) {
-                for (let image of product?.images) {
-                    const imageElm = this.addImage(image);
-                    if (!this.activeImage)
-                        this.selectImage(imageElm);
-                }
-                this.pnlImageListWrapper.visible = true;
-            }
-            this.markdownViewer.load(product?.description || "");
-            const stockQuantity = this.getStockQuantity();
-            this.lblStock.caption = stockQuantity ? ": " + stockQuantity : "";
-            this.pnlStock.visible = stockQuantity > 1;
-            this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
-            this.edtQuantity.value = 1;
-            this.iconMinus.enabled = false;
-            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
-            const logginedUserStr = localStorage.getItem('loggedInUser');
-            this.btnAddToCart.enabled = !!logginedUserStr;
-            const itemCount = this.model.getItemCountInCart();
-            this.lblAlreadyInCart.visible = itemCount > 0;
-            this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
-            this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
-        }
-        clear() {
-            this.lblName.caption = "";
-            this.pnlImageListWrapper.visible = false;
-            this.activeImage = undefined;
-            this.pnlImages.clearInnerHTML();
-            this.imgProduct.url = "";
-            this.markdownViewer.load("");
-            this.lblStock.caption = "";
-            this.pnlStock.visible = false;
-            this.lblPrice.caption = "";
-            this.edtQuantity.value = 1;
-            this.iconMinus.enabled = false;
-            this.iconPlus.enabled = false;
-            this.btnAddToCart.enabled = false;
-        }
-        addImage(image) {
-            const imageElm = (this.$render("i-image", { display: "block", width: "100%", height: "auto", border: { radius: '0.75rem', width: 2, style: 'solid', color: 'transparent' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, url: image, cursor: "pointer", mediaQueries: [
-                    {
-                        maxWidth: '767px',
-                        properties: {
-                            stack: { grow: '1', shrink: '0', basis: '25%' }
-                        }
-                    }
-                ], onClick: this.selectImage.bind(this) }));
-            this.pnlImages.appendChild(imageElm);
-            return imageElm;
-        }
-        selectImage(target) {
-            if (this.activeImage) {
-                this.activeImage.classList.remove('active');
-            }
-            this.activeImage = target;
-            this.activeImage.classList.add('active');
-            this.imgProduct.url = target.url;
-        }
-        updateQuantity(isIncremental) {
-            let quantity = Number.isInteger(this.quantity) ? this.quantity : Math.trunc(this.quantity);
-            const stockQuantity = this.getStockQuantity();
-            if (isIncremental) {
-                if (stockQuantity == null || stockQuantity > quantity) {
-                    this.edtQuantity.value = ++quantity;
-                }
-            }
-            else {
-                if (quantity > 1) {
-                    this.edtQuantity.value = --quantity;
-                }
-            }
-            this.iconMinus.enabled = quantity > 1;
-            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
-        }
-        increaseQuantity() {
-            this.updateQuantity(true);
-        }
-        decreaseQuantity() {
-            this.updateQuantity(false);
-        }
-        handleQuantityChanged() {
-            const stockQuantity = this.getStockQuantity();
-            if (!Number.isInteger(this.quantity)) {
-                this.edtQuantity.value = Math.trunc(this.quantity);
-            }
-            this.iconMinus.enabled = this.quantity > 1;
-            this.iconPlus.enabled = stockQuantity == null || stockQuantity > 1;
-        }
-        async handleAddToCart() {
-            this.btnAddToCart.rightIcon.spin = true;
-            this.btnAddToCart.rightIcon.visible = true;
-            this.btnAddToCart.caption = "";
-            this.model.addToCart(this.quantity, async (stallId) => {
-                await new Promise(resolve => setTimeout(resolve, 800));
-                this.btnAddToCart.caption = "$add_to_cart";
-                this.btnAddToCart.rightIcon.spin = false;
-                this.btnAddToCart.rightIcon.visible = false;
-                const itemCount = this.model.getItemCountInCart();
-                this.lblAlreadyInCart.visible = true;
-                this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
-                if (this.onProductAdded)
-                    this.onProductAdded(stallId);
-            });
-        }
-        init() {
-            this.i18n.init({ ...translations_json_2.default });
-            super.init();
-            this.updateQuantity = this.updateQuantity.bind(this);
-        }
-        render() {
-            return (this.$render("i-stack", { direction: "vertical", padding: { left: '1rem', right: '1rem', bottom: '2rem' }, lineHeight: 1.5 },
-                this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.875rem', weight: 700 }, padding: { top: '1rem', bottom: '2rem' } }),
-                this.$render("i-stack", { direction: "horizontal", width: "100%", gap: "1rem", mediaQueries: [
-                        {
-                            maxWidth: '767px',
-                            properties: {
-                                direction: "vertical",
-                            }
-                        }
-                    ] },
-                    this.$render("i-stack", { direction: "horizontal", width: "100%", maxWidth: "50%", stack: { grow: '1' }, padding: { right: '1rem' }, border: { right: { width: 1, style: 'solid', color: Theme.divider } }, mediaQueries: [
-                            {
-                                maxWidth: '767px',
-                                properties: {
-                                    maxWidth: '100%',
-                                    direction: "vertical",
-                                    reverse: true,
-                                    padding: { bottom: '1rem' },
-                                    border: { width: '0 0 1px 0', style: 'solid', color: Theme.divider }
-                                }
-                            }
-                        ] },
-                        this.$render("i-stack", { id: "pnlImageListWrapper", width: "35%", direction: "horizontal", justifyContent: "center", stack: { shrink: '0' }, visible: false, mediaQueries: [
-                                {
-                                    maxWidth: '767px',
-                                    properties: {
-                                        width: '100%',
-                                    }
-                                }
-                            ] },
-                            this.$render("i-stack", { id: "pnlImages", class: index_css_1.imageListStyle, direction: "vertical", width: "10%", minWidth: 86, margin: { top: '-0.5rem' }, alignItems: "center", mediaQueries: [
-                                    {
-                                        maxWidth: '767px',
-                                        properties: {
-                                            direction: "horizontal",
-                                            width: '100%',
-                                            minWidth: 'unset',
-                                            margin: {},
-                                            padding: { top: '0.5rem' },
-                                            overflow: { x: 'auto' }
-                                        }
-                                    }
-                                ] })),
-                        this.$render("i-image", { id: "imgProduct", display: "block", width: "100%", height: "auto", border: { radius: '0.75rem' }, overflow: "hidden" })),
-                    this.$render("i-stack", { direction: "vertical", width: "100%", alignItems: "center", gap: "2rem" },
-                        this.$render("i-markdown", { id: 'markdownViewer', class: index_css_1.markdownStyle, width: '100%' }),
-                        this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "2rem" },
-                            this.$render("i-panel", { id: "pnlStock", visible: false },
-                                this.$render("i-label", { display: "inline", caption: "$stock", font: { size: '1.5rem', color: Theme.text.secondary } }),
-                                this.$render("i-label", { id: "lblStock", font: { size: '1.5rem', color: Theme.text.secondary } })),
-                            this.$render("i-label", { id: "lblPrice", font: { size: '1.5rem', color: Theme.text.secondary } })),
-                        this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '1rem' }, visible: false }),
-                        this.$render("i-stack", { direction: "horizontal", justifyContent: "center", gap: "0.25rem" },
-                            this.$render("i-icon", { id: "iconMinus", width: '1.875rem', height: '1.875rem', name: 'minus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.decreaseQuantity }),
-                            this.$render("i-input", { id: "edtQuantity", class: index_css_1.numberInputStyle, width: 100, height: '2rem', inputType: "number", padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, onChanged: this.handleQuantityChanged }),
-                            this.$render("i-icon", { id: "iconPlus", width: '1.875rem', height: '1.875rem', name: 'plus-circle', padding: { left: '0.1875rem', right: '0.1875rem', top: '0.1875rem', bottom: '0.1875rem' }, border: { radius: '50%' }, stack: { shrink: '0' }, fill: Theme.text.primary, enabled: false, cursor: 'pointer', onClick: this.increaseQuantity })),
-                        this.$render("i-button", { id: "btnAddToCart", minHeight: 36, minWidth: 120, caption: "$add_to_cart", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, enabled: false, onClick: this.handleAddToCart })))));
-        }
-    };
-    ScomProductDetail = __decorate([
-        (0, components_4.customElements)('i-scom-product--detail')
-    ], ScomProductDetail);
-    exports.ScomProductDetail = ScomProductDetail;
-});
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/productDetail.tsx", "@scom/scom-product/translations.json.ts"], function (require, exports, components_5, index_css_2, model_1, productDetail_1, translations_json_3) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts"], function (require, exports, components_4, index_css_1, model_1, translations_json_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
-    const Theme = components_5.Styles.Theme.ThemeVars;
-    let ScomProduct = class ScomProduct extends components_5.Module {
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomProduct = class ScomProduct extends components_4.Module {
         constructor() {
             super(...arguments);
             this._isPreview = false;
@@ -755,7 +552,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.imgProduct.url = product?.images?.[0] || "";
             this.lblName.caption = product?.name || "";
             if (product?.description) {
-                this.lblDescription.caption = await (0, components_5.markdownToPlainText)(product.description);
+                this.lblDescription.caption = await (0, components_4.markdownToPlainText)(product.description);
             }
             else {
                 this.lblDescription.caption = "";
@@ -771,37 +568,10 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         async handleProductClick() {
-            if (this.isPreview || !this.model.isLoggedIn)
+            if (this.isPreview)
                 return;
-            if (!this.detailModule) {
-                this.detailModule = new productDetail_1.ScomProductDetail();
-                this.detailModule.model = this.model;
-                this.detailModule.onProductAdded = (stallId) => {
-                    this.detailModule.closeModal();
-                    this.updateCartButton();
-                    if (this.onProductAdded)
-                        this.onProductAdded(stallId);
-                };
-            }
-            const modal = this.detailModule.openModal({
-                width: "90vw",
-                height: "90vh",
-                overflow: { y: 'auto' },
-                popupPlacement: 'center',
-                mediaQueries: [
-                    {
-                        maxWidth: '767px',
-                        properties: {
-                            width: "100vw",
-                            height: '100vh',
-                            maxHeight: '100vh'
-                        }
-                    }
-                ]
-            });
-            await this.detailModule.ready();
-            this.detailModule.show();
-            modal.refresh();
+            const { product } = this.getData() || {};
+            window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
         }
         handleAddToCart() {
             if (this.isPreview)
@@ -819,7 +589,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             });
         }
         init() {
-            this.i18n.init({ ...translations_json_3.default });
+            this.i18n.init({ ...translations_json_2.default });
             super.init();
             this.model = new model_1.ProductModel();
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
@@ -836,11 +606,11 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         }
         render() {
             return (this.$render("i-panel", { width: "100%", height: "100%" },
-                this.$render("i-stack", { id: "pnlProduct", class: index_css_2.cardStyle, direction: "vertical", width: "100%", height: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
+                this.$render("i-stack", { id: "pnlProduct", class: index_css_1.cardStyle, direction: "vertical", width: "100%", height: "100%", maxWidth: "24rem", background: { color: Theme.background.paper }, margin: { left: 'auto', right: 'auto' }, border: { radius: '0.75rem', width: '1px', style: 'solid', color: Theme.background.paper }, overflow: "hidden", cursor: 'pointer', onClick: this.handleProductClick },
                     this.$render("i-panel", null,
                         this.$render("i-stack", { direction: "horizontal", width: "100%", height: "100%", stack: { shrink: '0' }, overflow: "hidden" },
                             this.$render("i-panel", { width: "100%", height: 0, overflow: "hidden", padding: { bottom: "100%" }, background: { color: Theme.action.disabledBackground } },
-                                this.$render("i-image", { id: "imgProduct", class: index_css_2.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" })))),
+                                this.$render("i-image", { id: "imgProduct", class: index_css_1.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" })))),
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineClamp: 2, lineHeight: '1.25rem', visible: false }),
@@ -850,7 +620,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         }
     };
     ScomProduct = __decorate([
-        (0, components_5.customElements)('i-scom-product')
+        (0, components_4.customElements)('i-scom-product')
     ], ScomProduct);
     exports.ScomProduct = ScomProduct;
 });

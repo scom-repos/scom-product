@@ -180,51 +180,6 @@ declare module "@scom/scom-product/model.ts" {
         get isLoggedIn(): boolean;
     }
 }
-/// <amd-module name="@scom/scom-product/productDetail.tsx" />
-declare module "@scom/scom-product/productDetail.tsx" {
-    import { ControlElement, Module } from '@ijstech/components';
-    import { ProductModel } from "@scom/scom-product/model.ts";
-    global {
-        namespace JSX {
-            interface IntrinsicElements {
-                ['i-scom-product--detail']: ControlElement;
-            }
-        }
-    }
-    export class ScomProductDetail extends Module {
-        private lblName;
-        private pnlImageListWrapper;
-        private pnlImages;
-        private imgProduct;
-        private markdownViewer;
-        private pnlStock;
-        private lblStock;
-        private lblPrice;
-        private lblAlreadyInCart;
-        private edtQuantity;
-        private iconMinus;
-        private iconPlus;
-        private btnAddToCart;
-        private activeImage;
-        private _model;
-        onProductAdded: (stallId: string) => void;
-        get model(): ProductModel;
-        set model(value: ProductModel);
-        private get quantity();
-        private getStockQuantity;
-        show(): Promise<void>;
-        clear(): void;
-        private addImage;
-        private selectImage;
-        private updateQuantity;
-        private increaseQuantity;
-        private decreaseQuantity;
-        private handleQuantityChanged;
-        private handleAddToCart;
-        init(): void;
-        render(): any;
-    }
-}
 /// <amd-module name="@scom/scom-product" />
 declare module "@scom/scom-product" {
     import { ControlElement, Module } from '@ijstech/components';
@@ -250,7 +205,6 @@ declare module "@scom/scom-product" {
         private lblAlreadyInCart;
         private btnAddToCart;
         private model;
-        private detailModule;
         private _isPreview;
         onProductAdded: (stallId: string) => void;
         get isPreview(): boolean;

@@ -13,7 +13,6 @@ import { ICommunityProductInfo } from '@scom/scom-social-sdk';
 import { cardStyle, imageStyle } from './index.css';
 import { IProductConfig, IProductInfo } from './interface';
 import { ProductModel } from './model';
-import { ScomProductDetail } from './productDetail';
 import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
@@ -41,7 +40,6 @@ export class ScomProduct extends Module {
     private lblAlreadyInCart: Label;
     private btnAddToCart: Button;
     private model: ProductModel;
-    private detailModule: ScomProductDetail;
     private _isPreview = false;
     onProductAdded: (stallId: string) => void;
 
@@ -97,35 +95,9 @@ export class ScomProduct extends Module {
     }
 
     private async handleProductClick() {
-        if (this.isPreview || !this.model.isLoggedIn) return;
-        if (!this.detailModule) {
-            this.detailModule = new ScomProductDetail();
-            this.detailModule.model = this.model;
-            this.detailModule.onProductAdded = (stallId: string) => {
-                this.detailModule.closeModal();
-                this.updateCartButton();
-                if (this.onProductAdded) this.onProductAdded(stallId);
-            }
-        }
-        const modal = this.detailModule.openModal({
-            width: "90vw",
-            height: "90vh",
-            overflow: { y: 'auto' },
-            popupPlacement: 'center',
-            mediaQueries: [
-                {
-                    maxWidth: '767px',
-                    properties: {
-                        width: "100vw",
-                        height: '100vh',
-                        maxHeight: '100vh'
-                    }
-                }
-            ]
-        });
-        await this.detailModule.ready();
-        this.detailModule.show();
-        modal.refresh();
+        if (this.isPreview) return;
+        const { product } = this.getData() || {};
+        window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
     }
 
     private handleAddToCart() {

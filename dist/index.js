@@ -106,7 +106,11 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
     exports.fetchCommunityStalls = fetchCommunityStalls;
     async function fetchCommunityProducts(creatorId, communityId, stallId) {
         const dataManager = components_2.application.store?.mainDataManager;
-        const products = await dataManager.fetchCommunityProducts(creatorId, communityId, stallId);
+        const products = await dataManager.fetchCommunityProducts({
+            creatorId,
+            communityId,
+            stallId
+        });
         return products;
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
@@ -393,9 +397,9 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         }
         addToCart(quantity, callback) {
             const logginedUserId = (0, utils_2.getLoggedInUserId)();
-            if (!logginedUserId)
-                return;
             const { product, stall } = this.getData() || {};
+            if (!logginedUserId || !product)
+                return;
             const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
             const productStr = localStorage.getItem(key);
             if (!productStr) {
@@ -427,9 +431,9 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
         }
         getItemCountInCart() {
             const logginedUserId = (0, utils_2.getLoggedInUserId)();
-            if (!logginedUserId)
-                return;
             const { product, stall } = this.getData() || {};
+            if (!logginedUserId || !product)
+                return;
             const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
             const productStr = localStorage.getItem(key);
             if (productStr) {

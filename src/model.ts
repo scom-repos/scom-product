@@ -9,8 +9,8 @@ export class ProductModel {
 
   addToCart(quantity: number, callback?: (stallId: string) => void) {
     const logginedUserId = getLoggedInUserId();
-    if (!logginedUserId) return;
     const { product, stall } = this.getData() || {};
+    if (!logginedUserId || !product) return;
     const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
     const productStr = localStorage.getItem(key);
     if (!productStr) {
@@ -40,8 +40,8 @@ export class ProductModel {
   
   getItemCountInCart() {
     const logginedUserId = getLoggedInUserId();
-    if (!logginedUserId) return;
     const { product, stall } = this.getData() || {};
+    if (!logginedUserId || !product) return;
     const key = `shoppingCart/${logginedUserId}/${product.stallId}`;
     const productStr = localStorage.getItem(key);
     if (productStr) {

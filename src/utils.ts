@@ -2,7 +2,7 @@ import { application } from "@ijstech/components";
 import { Nip19, SocialDataManager, SocialUtilsManager } from "@scom/scom-social-sdk";
 
 function extractEnsName(name: string) {
-    const result: { creatorId?: string, communityId?: string }  = {};
+    const result: { creatorId?: string, communityId?: string } = {};
     const ensMap: { [key: string]: string; } = application.store?.ensMap || {};
     const value = ensMap[name];
     if (!value) return result;
@@ -37,19 +37,35 @@ export function getLoggedInUserId() {
 export async function fetchCommunities() {
     const logginedUserId = getLoggedInUserId();
     if (!logginedUserId) return [];
-    const dataManager: SocialDataManager = application.store?.mainDataManager;
-    const communities = await dataManager.fetchMyCommunities(logginedUserId);
-    return communities;
+    try {
+        const dataManager: SocialDataManager = application.store?.mainDataManager;
+        const communities = await dataManager.fetchMyCommunities(logginedUserId);
+        return communities;
+    } catch {
+        return [];
+    }
 }
 
 export async function fetchCommunityStalls(creatorId: string, communityId: string) {
-    const dataManager: SocialDataManager = application.store?.mainDataManager;
-    const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
-    return stalls;
+    try {
+        const dataManager: SocialDataManager = application.store?.mainDataManager;
+        const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
+        return stalls;
+    } catch {
+        return [];
+    }
 }
 
 export async function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string) {
-    const dataManager: SocialDataManager = application.store?.mainDataManager;
-    const products = await dataManager.fetchCommunityProducts(creatorId, communityId, stallId);
-    return products;
+    try {
+        const dataManager: SocialDataManager = application.store?.mainDataManager;
+        const products = await dataManager.fetchCommunityProducts({
+            creatorId,
+            communityId,
+            stallId
+        });
+        return products;
+    } catch {
+        return [];
+    }
 }

@@ -84,6 +84,7 @@ export class ScomProduct extends Module {
         }
         this.lblDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+        this.btnAddToCart.visible = !!product;
         this.updateCartButton();
     }
 
@@ -95,8 +96,8 @@ export class ScomProduct extends Module {
     }
 
     private async handleProductClick() {
-        if (this.isPreview) return;
         const { product } = this.getData() || {};
+        if (this.isPreview || !product) return;
         window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
     }
 
@@ -210,6 +211,7 @@ export class ScomProduct extends Module {
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
                         font={{ color: Theme.colors.primary.contrastText, bold: true }}
                         onClick={this.handleAddToCart}
+                        visible={false}
                     ></i-button>
                 </i-stack>
             </i-panel>

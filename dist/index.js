@@ -93,25 +93,40 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         const logginedUserId = getLoggedInUserId();
         if (!logginedUserId)
             return [];
-        const dataManager = components_2.application.store?.mainDataManager;
-        const communities = await dataManager.fetchMyCommunities(logginedUserId);
-        return communities;
+        try {
+            const dataManager = components_2.application.store?.mainDataManager;
+            const communities = await dataManager.fetchMyCommunities(logginedUserId);
+            return communities;
+        }
+        catch {
+            return [];
+        }
     }
     exports.fetchCommunities = fetchCommunities;
     async function fetchCommunityStalls(creatorId, communityId) {
-        const dataManager = components_2.application.store?.mainDataManager;
-        const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
-        return stalls;
+        try {
+            const dataManager = components_2.application.store?.mainDataManager;
+            const stalls = await dataManager.fetchCommunityStalls(creatorId, communityId);
+            return stalls;
+        }
+        catch {
+            return [];
+        }
     }
     exports.fetchCommunityStalls = fetchCommunityStalls;
     async function fetchCommunityProducts(creatorId, communityId, stallId) {
-        const dataManager = components_2.application.store?.mainDataManager;
-        const products = await dataManager.fetchCommunityProducts({
-            creatorId,
-            communityId,
-            stallId
-        });
-        return products;
+        try {
+            const dataManager = components_2.application.store?.mainDataManager;
+            const products = await dataManager.fetchCommunityProducts({
+                creatorId,
+                communityId,
+                stallId
+            });
+            return products;
+        }
+        catch {
+            return [];
+        }
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
 });
@@ -563,6 +578,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             }
             this.lblDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+            this.btnAddToCart.visible = !!product;
             this.updateCartButton();
         }
         updateCartButton() {
@@ -572,9 +588,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         async handleProductClick() {
-            if (this.isPreview)
-                return;
             const { product } = this.getData() || {};
+            if (this.isPreview || !product)
+                return;
             window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
         }
         handleAddToCart() {
@@ -620,7 +636,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineClamp: 2, lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" }),
                         this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
-                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart }))));
+                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart, visible: false }))));
         }
     };
     ScomProduct = __decorate([

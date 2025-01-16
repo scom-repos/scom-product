@@ -9,11 +9,12 @@ import {
     StackLayout,
     Styles,
 } from '@ijstech/components';
-import { ICommunityProductInfo } from '@scom/scom-social-sdk';
+import { ICommunityProductInfo, MarketplaceProductType } from '@scom/scom-social-sdk';
 import { cardStyle, imageStyle } from './index.css';
 import { IProductConfig, IProductInfo } from './interface';
 import { ProductModel } from './model';
 import translations from './translations.json';
+import { isPurchasedProduct } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -37,10 +38,11 @@ export class ScomProduct extends Module {
     private lblName: Label;
     private lblDescription: Label;
     private lblPrice: Label;
-    private lblAlreadyInCart: Label;
+    private lblMessage: Label;
     private btnAddToCart: Button;
     private model: ProductModel;
     private _isPreview = false;
+    private isPurchased = false;
     onProductAdded: (stallId: string) => void;
 
     get isPreview() {
@@ -85,14 +87,17 @@ export class ScomProduct extends Module {
         this.lblDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.btnAddToCart.visible = !!product;
+        if (product.productType === MarketplaceProductType.Digital) {
+            this.isPurchased = await isPurchasedProduct(product.id, product.stallId);
+        }
         this.updateCartButton();
     }
 
     private updateCartButton() {
         const itemCount = this.model.getItemCountInCart();
-        this.lblAlreadyInCart.visible = itemCount > 0;
-        this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
-        this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
+        this.lblMessage.visible = this.isPurchased || itemCount > 0;
+        this.lblMessage.caption = this.isPurchased ? this.i18n.get("$purchased_message") : this.i18n.get('$already_in_cart', { quantity: itemCount });
+        this.btnAddToCart.caption = this.i18n.get(this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
     }
 
     private async handleProductClick() {
@@ -101,8 +106,12 @@ export class ScomProduct extends Module {
         window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
     }
 
-    private handleAddToCart() {
+    private handleButtonClick() {
         if (this.isPreview) return;
+        if (this.isPurchased) {
+            this.handleProductClick();
+            return;
+        }
         this.btnAddToCart.rightIcon.spin = true;
         this.btnAddToCart.rightIcon.visible = true;
         this.btnAddToCart.caption = "";
@@ -200,17 +209,18 @@ export class ScomProduct extends Module {
                             visible={false}
                         ></i-label>
                         <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem", weight: 600 }} lineHeight="1.25rem"></i-label>
-                        <i-label id="lblAlreadyInCart" class="text-center" font={{ color: Theme.colors.success.main, size: '0.9375rem' }} visible={false}></i-label>
+                        <i-label id="lblMessage" class="text-center" font={{ color: Theme.colors.success.main, size: '0.9375rem' }} visible={false}></i-label>
                     </i-stack>
                     <i-button
                         id="btnAddToCart"
+                        class="text-center"
                         minHeight={40}
                         width="100%"
                         caption="$add_to_cart"
                         margin={{ top: 'auto' }}
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }}
                         font={{ color: Theme.colors.primary.contrastText, bold: true }}
-                        onClick={this.handleAddToCart}
+                        onClick={this.handleButtonClick}
                         visible={false}
                     ></i-button>
                 </i-stack>

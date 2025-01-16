@@ -29,9 +29,12 @@ declare module "@scom/scom-product/utils.ts" {
         communityId?: string;
     };
     export function getLoggedInUserId(): any;
+    export function getUserPubkey(): any;
     export function fetchCommunities(): Promise<import("@scom/scom-social-sdk").ICommunity[]>;
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
     export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
+    export function fetchBuyerOrders(pubkey: string): Promise<import("@scom/scom-social-sdk").IRetrievedBuyerOrder[]>;
+    export function isPurchasedProduct(productId: string, stallId: string): Promise<boolean>;
 }
 /// <amd-module name="@scom/scom-product/translations.json.ts" />
 declare module "@scom/scom-product/translations.json.ts" {
@@ -47,6 +50,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             add_to_cart: string;
             buy_more: string;
             already_in_cart: string;
+            purchased_message: string;
+            view_post_purchase_content: string;
         };
         "zh-hant": {
             stock: string;
@@ -59,6 +64,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             add_to_cart: string;
             buy_more: string;
             already_in_cart: string;
+            purchased_message: string;
+            view_post_purchase_content: string;
         };
         vi: {
             stock: string;
@@ -71,6 +78,8 @@ declare module "@scom/scom-product/translations.json.ts" {
             add_to_cart: string;
             buy_more: string;
             already_in_cart: string;
+            purchased_message: string;
+            view_post_purchase_content: string;
         };
     };
     export default _default;
@@ -202,10 +211,11 @@ declare module "@scom/scom-product" {
         private lblName;
         private lblDescription;
         private lblPrice;
-        private lblAlreadyInCart;
+        private lblMessage;
         private btnAddToCart;
         private model;
         private _isPreview;
+        private isPurchased;
         onProductAdded: (stallId: string) => void;
         get isPreview(): boolean;
         set isPreview(value: boolean);
@@ -225,7 +235,7 @@ declare module "@scom/scom-product" {
         private updateUIBySetData;
         private updateCartButton;
         private handleProductClick;
-        private handleAddToCart;
+        private handleButtonClick;
         init(): void;
         render(): any;
     }

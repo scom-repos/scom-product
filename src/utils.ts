@@ -1,5 +1,5 @@
 import { application } from "@ijstech/components";
-import { Nip19, SocialDataManager, SocialUtilsManager } from "@scom/scom-social-sdk";
+import { BuyerOrderStatus, Nip19, SocialDataManager, SocialUtilsManager } from "@scom/scom-social-sdk";
 
 function extractEnsName(name: string) {
     const result: { creatorId?: string, communityId?: string } = {};
@@ -32,6 +32,13 @@ export function getLoggedInUserId() {
     if (!logginedUserStr) return;
     const logginedUser = JSON.parse(logginedUserStr);
     return logginedUser.id;
+}
+
+export function getUserPubkey() {
+    const logginedUserStr = localStorage.getItem('loggedInUser');
+    if (!logginedUserStr) return;
+    const logginedUser = JSON.parse(logginedUserStr);
+    return logginedUser.pubkey;
 }
 
 export async function fetchCommunities() {
@@ -68,4 +75,23 @@ export async function fetchCommunityProducts(creatorId?: string, communityId?: s
     } catch {
         return [];
     }
+}
+
+export async function fetchBuyerOrders(pubkey: string) {
+    try {
+        const dataManager: SocialDataManager = application.store?.mainDataManager;
+        const orders = await dataManager.fetchBuyerOrders(pubkey);
+        return orders;
+    } catch {
+        return [];
+    }
+}
+
+export async function isPurchasedProduct(productId: string, stallId: string) {
+  const pubkey = getUserPubkey();
+  const orders = await fetchBuyerOrders(pubkey);
+  return orders.some(order => {
+    const isPaid = order.status !== BuyerOrderStatus.Unpaid && order.status !== BuyerOrderStatus.Canceled;
+    return isPaid && order.stallId === stallId && order.items.find(item => item.productId === productId);
+  });
 }

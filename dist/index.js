@@ -50,10 +50,10 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk"], function (require, exports, components_2, scom_social_sdk_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.fetchCommunities = exports.getLoggedInUserId = exports.getCommunityBasicInfoFromUri = void 0;
+    exports.isPurchasedProduct = exports.fetchBuyerOrders = exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.fetchCommunities = exports.getUserPubkey = exports.getLoggedInUserId = exports.getCommunityBasicInfoFromUri = void 0;
     function extractEnsName(name) {
         const result = {};
         const ensMap = components_2.application.store?.ensMap || {};
@@ -89,6 +89,14 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         return logginedUser.id;
     }
     exports.getLoggedInUserId = getLoggedInUserId;
+    function getUserPubkey() {
+        const logginedUserStr = localStorage.getItem('loggedInUser');
+        if (!logginedUserStr)
+            return;
+        const logginedUser = JSON.parse(logginedUserStr);
+        return logginedUser.pubkey;
+    }
+    exports.getUserPubkey = getUserPubkey;
     async function fetchCommunities() {
         const logginedUserId = getLoggedInUserId();
         if (!logginedUserId)
@@ -129,6 +137,26 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         }
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
+    async function fetchBuyerOrders(pubkey) {
+        try {
+            const dataManager = components_2.application.store?.mainDataManager;
+            const orders = await dataManager.fetchBuyerOrders(pubkey);
+            return orders;
+        }
+        catch {
+            return [];
+        }
+    }
+    exports.fetchBuyerOrders = fetchBuyerOrders;
+    async function isPurchasedProduct(productId, stallId) {
+        const pubkey = getUserPubkey();
+        const orders = await fetchBuyerOrders(pubkey);
+        return orders.some(order => {
+            const isPaid = order.status !== scom_social_sdk_1.BuyerOrderStatus.Unpaid && order.status !== scom_social_sdk_1.BuyerOrderStatus.Canceled;
+            return isPaid && order.stallId === stallId && order.items.find(item => item.productId === productId);
+        });
+    }
+    exports.isPurchasedProduct = isPurchasedProduct;
 });
 define("@scom/scom-product/translations.json.ts", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -146,6 +174,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "add_to_cart": "Add to Cart",
             "buy_more": "Buy More",
             "already_in_cart": "You already have {{quantity}} in your cart",
+            "purchased_message": "You've purchased this product",
+            "view_post_purchase_content": "View Post-Purchase Content",
         },
         "zh-hant": {
             "stock": "庫存",
@@ -158,6 +188,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "add_to_cart": "加入購物車",
             "buy_more": "購買更多",
             "already_in_cart": "您的購物車中已有{{quantity}}件",
+            "purchased_message": "您已擁有此產品",
+            "view_post_purchase_content": "查看購後內容",
         },
         "vi": {
             "stock": "số lượng hàng tồn kho",
@@ -169,7 +201,9 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
             "add_to_cart": "Thêm vào giỏ hàng",
             "buy_more": "Mua thêm",
-            "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng"
+            "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
+            "purchased_message": "Bạn đã mua sản phẩm này",
+            "view_post_purchase_content": "Xem nội dung sau khi mua"
         }
     };
 });
@@ -531,7 +565,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts"], function (require, exports, components_4, index_css_1, model_1, translations_json_2) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_2, index_css_1, model_1, translations_json_2, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -540,6 +574,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         constructor() {
             super(...arguments);
             this._isPreview = false;
+            this.isPurchased = false;
         }
         get isPreview() {
             return this._isPreview;
@@ -579,13 +614,16 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.btnAddToCart.visible = !!product;
+            if (product.productType === scom_social_sdk_2.MarketplaceProductType.Digital) {
+                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.id, product.stallId);
+            }
             this.updateCartButton();
         }
         updateCartButton() {
             const itemCount = this.model.getItemCountInCart();
-            this.lblAlreadyInCart.visible = itemCount > 0;
-            this.lblAlreadyInCart.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
-            this.btnAddToCart.caption = this.i18n.get(itemCount > 0 ? "$buy_more" : "$add_to_cart");
+            this.lblMessage.visible = this.isPurchased || itemCount > 0;
+            this.lblMessage.caption = this.isPurchased ? this.i18n.get("$purchased_message") : this.i18n.get('$already_in_cart', { quantity: itemCount });
+            this.btnAddToCart.caption = this.i18n.get(this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         async handleProductClick() {
             const { product } = this.getData() || {};
@@ -593,9 +631,13 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                 return;
             window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
         }
-        handleAddToCart() {
+        handleButtonClick() {
             if (this.isPreview)
                 return;
+            if (this.isPurchased) {
+                this.handleProductClick();
+                return;
+            }
             this.btnAddToCart.rightIcon.spin = true;
             this.btnAddToCart.rightIcon.visible = true;
             this.btnAddToCart.caption = "";
@@ -635,8 +677,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
                         this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineClamp: 2, lineHeight: '1.25rem', visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" }),
-                        this.$render("i-label", { id: "lblAlreadyInCart", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
-                    this.$render("i-button", { id: "btnAddToCart", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleAddToCart, visible: false }))));
+                        this.$render("i-label", { id: "lblMessage", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
+                    this.$render("i-button", { id: "btnAddToCart", class: "text-center", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleButtonClick, visible: false }))));
         }
     };
     ScomProduct = __decorate([

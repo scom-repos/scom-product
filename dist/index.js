@@ -137,7 +137,7 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         }
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
-    async function isPurchasedProduct(productId, stallId) {
+    async function isPurchasedProduct(productId) {
         const pubkey = getUserPubkey();
         try {
             const dataManager = components_2.application.store?.mainDataManager;
@@ -608,7 +608,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.btnAddToCart.visible = !!product;
             if (product.productType === scom_social_sdk_1.MarketplaceProductType.Digital) {
-                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.id, product.stallId);
+                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.id);
             }
             this.updateCartButton();
         }

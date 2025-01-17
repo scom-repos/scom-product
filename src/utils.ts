@@ -77,7 +77,7 @@ export async function fetchCommunityProducts(creatorId?: string, communityId?: s
     }
 }
 
-export async function isPurchasedProduct(productId: string, stallId: string) {
+export async function isPurchasedProduct(productId: string) {
     const pubkey = getUserPubkey();
     try {
         const dataManager: SocialDataManager = application.store?.mainDataManager;

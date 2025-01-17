@@ -606,12 +606,13 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.imgProduct.url = product?.images?.[0] || "";
             this.lblName.caption = product?.name || "";
             if (product?.description) {
-                this.lblDescription.caption = await (0, components_4.markdownToPlainText)(product.description);
+                const plainText = await this.markdownDescription.toPlainText(product.description);
+                this.markdownDescription.load(plainText || "");
             }
             else {
-                this.lblDescription.caption = "";
+                this.markdownDescription.load("");
             }
-            this.lblDescription.visible = !!product?.description;
+            this.markdownDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.btnAddToCart.visible = !!product;
             if (product.productType === scom_social_sdk_2.MarketplaceProductType.Digital) {
@@ -650,6 +651,13 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                     this.onProductAdded(stallId);
             });
         }
+        initMarkdownStyle() {
+            this.markdownDescription.style.display = '-webkit-box';
+            this.markdownDescription.style.webkitLineClamp = `${2}`;
+            this.markdownDescription.style.overflow = 'hidden';
+            this.markdownDescription.style.webkitBoxOrient = 'vertical';
+            this.markdownDescription.style.whiteSpace = '';
+        }
         init() {
             this.i18n.init({ ...translations_json_2.default });
             super.init();
@@ -657,6 +665,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
             this.btnAddToCart.enabled = this.model.isLoggedIn;
             this.pnlProduct.cursor = this.model.isLoggedIn ? 'pointer' : 'default';
+            this.initMarkdownStyle();
             const isPreview = this.getAttribute('isPreview', true);
             if (isPreview != null)
                 this.isPreview = isPreview;
@@ -675,7 +684,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                                 this.$render("i-image", { id: "imgProduct", class: index_css_1.imageStyle, position: "absolute", display: "block", width: "100%", height: "100%", top: "100%", left: 0, objectFit: "cover" })))),
                     this.$render("i-stack", { direction: "vertical", alignItems: "center", padding: { top: '1rem', bottom: '1rem', left: '1.25rem', right: '1.25rem' }, gap: "0.5rem" },
                         this.$render("i-label", { id: "lblName", class: "text-center", font: { size: '1.25rem', weight: 500 }, wordBreak: "break-word", lineHeight: '1.5rem' }),
-                        this.$render("i-label", { id: "lblDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineClamp: 2, lineHeight: '1.25rem', visible: false }),
+                        this.$render("i-markdown", { id: "markdownDescription", width: "100%", class: "text-center", font: { size: '1rem' }, lineHeight: '1.25rem', overflow: "hidden", visible: false }),
                         this.$render("i-label", { id: "lblPrice", font: { color: Theme.text.secondary, size: "0.875rem", weight: 600 }, lineHeight: "1.25rem" }),
                         this.$render("i-label", { id: "lblMessage", class: "text-center", font: { color: Theme.colors.success.main, size: '0.9375rem' }, visible: false })),
                     this.$render("i-button", { id: "btnAddToCart", class: "text-center", minHeight: 40, width: "100%", caption: "$add_to_cart", margin: { top: 'auto' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleButtonClick, visible: false }))));

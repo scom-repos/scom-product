@@ -209,7 +209,7 @@ declare module "@scom/scom-product" {
         private pnlProduct;
         private imgProduct;
         private lblName;
-        private lblDescription;
+        private markdownDescription;
         private lblPrice;
         private lblMessage;
         private btnAddToCart;
@@ -236,6 +236,7 @@ declare module "@scom/scom-product" {
         private updateCartButton;
         private handleProductClick;
         private handleButtonClick;
+        private initMarkdownStyle;
         init(): void;
         render(): any;
     }

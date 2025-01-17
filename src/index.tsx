@@ -4,6 +4,7 @@ import {
     customElements,
     Image,
     Label,
+    Markdown,
     markdownToPlainText,
     Module,
     StackLayout,
@@ -36,7 +37,7 @@ export class ScomProduct extends Module {
     private pnlProduct: StackLayout;
     private imgProduct: Image;
     private lblName: Label;
-    private lblDescription: Label;
+    private markdownDescription: Markdown;
     private lblPrice: Label;
     private lblMessage: Label;
     private btnAddToCart: Button;
@@ -80,11 +81,12 @@ export class ScomProduct extends Module {
         this.imgProduct.url = product?.images?.[0] || "";
         this.lblName.caption = product?.name || "";
         if (product?.description) {
-            this.lblDescription.caption = await markdownToPlainText(product.description);
+            const plainText = await this.markdownDescription.toPlainText(product.description);
+            this.markdownDescription.load(plainText || "");
         } else {
-            this.lblDescription.caption = "";
+            this.markdownDescription.load("");
         }
-        this.lblDescription.visible = !!product?.description;
+        this.markdownDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.btnAddToCart.visible = !!product;
         if (product.productType === MarketplaceProductType.Digital) {
@@ -124,6 +126,14 @@ export class ScomProduct extends Module {
         });
     }
 
+    private initMarkdownStyle() {
+        this.markdownDescription.style.display = '-webkit-box';
+        this.markdownDescription.style.webkitLineClamp = `${2}`;
+        this.markdownDescription.style.overflow = 'hidden';
+        this.markdownDescription.style.webkitBoxOrient = 'vertical';
+        this.markdownDescription.style.whiteSpace = '';
+    }
+
     init() {
         this.i18n.init({ ...translations });
         super.init();
@@ -131,6 +141,7 @@ export class ScomProduct extends Module {
         this.model.updateUIBySetData = this.updateUIBySetData.bind(this);
         this.btnAddToCart.enabled = this.model.isLoggedIn;
         this.pnlProduct.cursor = this.model.isLoggedIn ? 'pointer' : 'default';
+        this.initMarkdownStyle();
         const isPreview = this.getAttribute('isPreview', true);
         if (isPreview != null) this.isPreview = isPreview;
         const config = this.getAttribute('config', true);
@@ -199,15 +210,15 @@ export class ScomProduct extends Module {
                             wordBreak="break-word"
                             lineHeight={'1.5rem'}
                         ></i-label>
-                        <i-label
-                            id="lblDescription"
+                        <i-markdown
+                            id="markdownDescription"
                             width="100%"
                             class="text-center"
                             font={{ size: '1rem' }}
-                            lineClamp={2}
                             lineHeight={'1.25rem'}
+                            overflow="hidden"
                             visible={false}
-                        ></i-label>
+                        ></i-markdown>
                         <i-label id="lblPrice" font={{ color: Theme.text.secondary, size: "0.875rem", weight: 600 }} lineHeight="1.25rem"></i-label>
                         <i-label id="lblMessage" class="text-center" font={{ color: Theme.colors.success.main, size: '0.9375rem' }} visible={false}></i-label>
                     </i-stack>

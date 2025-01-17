@@ -1,5 +1,5 @@
 import { application } from "@ijstech/components";
-import { BuyerOrderStatus, Nip19, SocialDataManager, SocialUtilsManager } from "@scom/scom-social-sdk";
+import { SocialDataManager } from "@scom/scom-social-sdk";
 
 function extractEnsName(name: string) {
     const result: { creatorId?: string, communityId?: string } = {};
@@ -77,21 +77,13 @@ export async function fetchCommunityProducts(creatorId?: string, communityId?: s
     }
 }
 
-export async function fetchBuyerOrders(pubkey: string) {
+export async function isPurchasedProduct(productId: string, stallId: string) {
+    const pubkey = getUserPubkey();
     try {
         const dataManager: SocialDataManager = application.store?.mainDataManager;
-        const orders = await dataManager.fetchBuyerOrders(pubkey);
-        return orders;
+        const isPurchased = await dataManager.fetchProductPurchaseStatus({ sellerPubkey: pubkey, productId });
+        return isPurchased;
     } catch {
-        return [];
+        return false;
     }
-}
-
-export async function isPurchasedProduct(productId: string, stallId: string) {
-  const pubkey = getUserPubkey();
-  const orders = await fetchBuyerOrders(pubkey);
-  return orders.some(order => {
-    const isPaid = order.status !== BuyerOrderStatus.Unpaid && order.status !== BuyerOrderStatus.Canceled;
-    return isPaid && order.stallId === stallId && order.items.find(item => item.productId === productId);
-  });
 }

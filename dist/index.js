@@ -50,10 +50,10 @@ define("@scom/scom-product/interface.ts", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk"], function (require, exports, components_2, scom_social_sdk_1) {
+define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.isPurchasedProduct = exports.fetchBuyerOrders = exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.fetchCommunities = exports.getUserPubkey = exports.getLoggedInUserId = exports.getCommunityBasicInfoFromUri = void 0;
+    exports.isPurchasedProduct = exports.fetchCommunityProducts = exports.fetchCommunityStalls = exports.fetchCommunities = exports.getUserPubkey = exports.getLoggedInUserId = exports.getCommunityBasicInfoFromUri = void 0;
     function extractEnsName(name) {
         const result = {};
         const ensMap = components_2.application.store?.ensMap || {};
@@ -137,24 +137,16 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         }
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
-    async function fetchBuyerOrders(pubkey) {
-        try {
-            const dataManager = components_2.application.store?.mainDataManager;
-            const orders = await dataManager.fetchBuyerOrders(pubkey);
-            return orders;
-        }
-        catch {
-            return [];
-        }
-    }
-    exports.fetchBuyerOrders = fetchBuyerOrders;
     async function isPurchasedProduct(productId, stallId) {
         const pubkey = getUserPubkey();
-        const orders = await fetchBuyerOrders(pubkey);
-        return orders.some(order => {
-            const isPaid = order.status !== scom_social_sdk_1.BuyerOrderStatus.Unpaid && order.status !== scom_social_sdk_1.BuyerOrderStatus.Canceled;
-            return isPaid && order.stallId === stallId && order.items.find(item => item.productId === productId);
-        });
+        try {
+            const dataManager = components_2.application.store?.mainDataManager;
+            const isPurchased = await dataManager.fetchProductPurchaseStatus({ sellerPubkey: pubkey, productId });
+            return isPurchased;
+        }
+        catch {
+            return false;
+        }
     }
     exports.isPurchasedProduct = isPurchasedProduct;
 });
@@ -565,7 +557,7 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_2, index_css_1, model_1, translations_json_2, utils_3) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_1, index_css_1, model_1, translations_json_2, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -615,7 +607,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.markdownDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.btnAddToCart.visible = !!product;
-            if (product.productType === scom_social_sdk_2.MarketplaceProductType.Digital) {
+            if (product.productType === scom_social_sdk_1.MarketplaceProductType.Digital) {
                 this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.id, product.stallId);
             }
             this.updateCartButton();

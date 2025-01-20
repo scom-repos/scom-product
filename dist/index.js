@@ -137,11 +137,10 @@ define("@scom/scom-product/utils.ts", ["require", "exports", "@ijstech/component
         }
     }
     exports.fetchCommunityProducts = fetchCommunityProducts;
-    async function isPurchasedProduct(productId) {
-        const pubkey = getUserPubkey();
+    async function isPurchasedProduct(sellerPubkey, productId) {
         try {
             const dataManager = components_2.application.store?.mainDataManager;
-            const isPurchased = await dataManager.fetchProductPurchaseStatus({ sellerPubkey: pubkey, productId });
+            const isPurchased = await dataManager.fetchProductPurchaseStatus({ sellerPubkey, productId });
             return isPurchased;
         }
         catch {
@@ -608,7 +607,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.btnAddToCart.visible = !!product;
             if (product.productType === scom_social_sdk_1.MarketplaceProductType.Digital) {
-                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.id);
+                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.eventData.pubkey, product.id);
             }
             this.updateCartButton();
         }

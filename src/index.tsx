@@ -90,7 +90,7 @@ export class ScomProduct extends Module {
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.btnAddToCart.visible = !!product;
         if (product.productType === MarketplaceProductType.Digital) {
-            this.isPurchased = await isPurchasedProduct(product.id);
+            this.isPurchased = await isPurchasedProduct(product.eventData.pubkey, product.id);
         }
         this.updateCartButton();
     }

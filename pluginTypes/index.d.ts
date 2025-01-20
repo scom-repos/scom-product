@@ -33,7 +33,7 @@ declare module "@scom/scom-product/utils.ts" {
     export function fetchCommunities(): Promise<import("@scom/scom-social-sdk").ICommunity[]>;
     export function fetchCommunityStalls(creatorId: string, communityId: string): Promise<import("@scom/scom-social-sdk").ICommunityStallInfo[]>;
     export function fetchCommunityProducts(creatorId?: string, communityId?: string, stallId?: string): Promise<import("@scom/scom-social-sdk").ICommunityProductInfo[]>;
-    export function isPurchasedProduct(productId: string): Promise<boolean>;
+    export function isPurchasedProduct(sellerPubkey: string, productId: string): Promise<boolean>;
 }
 /// <amd-module name="@scom/scom-product/translations.json.ts" />
 declare module "@scom/scom-product/translations.json.ts" {

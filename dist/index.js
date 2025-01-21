@@ -164,6 +164,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
             "add_to_cart": "Add to Cart",
             "buy_more": "Buy More",
+            "view_services": "View Services",
             "already_in_cart": "You already have {{quantity}} in your cart",
             "purchased_message": "You've purchased this product",
             "view_post_purchase_content": "View Post-Purchase Content",
@@ -178,6 +179,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
             "add_to_cart": "加入購物車",
             "buy_more": "購買更多",
+            "view_services": "查看服務",
             "already_in_cart": "您的購物車中已有{{quantity}}件",
             "purchased_message": "您已擁有此產品",
             "view_post_purchase_content": "查看購後內容",
@@ -192,6 +194,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
             "add_to_cart": "Thêm vào giỏ hàng",
             "buy_more": "Mua thêm",
+            "view_services": "Xem Dịch Vụ",
             "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
             "purchased_message": "Bạn đã mua sản phẩm này",
             "view_post_purchase_content": "Xem nội dung sau khi mua"
@@ -427,7 +430,7 @@ define("@scom/scom-product/formSchema.ts", ["require", "exports", "@scom/scom-pr
         }
     };
 });
-define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product/formSchema.ts", "@scom/scom-product/utils.ts"], function (require, exports, formSchema_1, utils_2) {
+define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-social-sdk", "@scom/scom-product/formSchema.ts", "@scom/scom-product/utils.ts"], function (require, exports, scom_social_sdk_1, formSchema_1, utils_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ProductModel = void 0;
@@ -553,10 +556,13 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
             const loggedInUserStr = localStorage.getItem('loggedInUser');
             return !!loggedInUserStr;
         }
+        get isReservation() {
+            return this._data?.product?.productType === scom_social_sdk_1.MarketplaceProductType.Reservation;
+        }
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_1, index_css_1, model_1, translations_json_2, utils_3) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_2, index_css_1, model_1, translations_json_2, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -605,8 +611,9 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             }
             this.markdownDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+            this.lblPrice.visible = !this.model.isReservation;
             this.btnAddToCart.visible = !!product;
-            if (product.productType === scom_social_sdk_1.MarketplaceProductType.Digital) {
+            if (product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital) {
                 this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.eventData.pubkey, product.id);
             }
             this.updateCartButton();
@@ -615,7 +622,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const itemCount = this.model.getItemCountInCart();
             this.lblMessage.visible = this.isPurchased || itemCount > 0;
             this.lblMessage.caption = this.isPurchased ? this.i18n.get("$purchased_message") : this.i18n.get('$already_in_cart', { quantity: itemCount });
-            this.btnAddToCart.caption = this.i18n.get(this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
+            this.btnAddToCart.caption = this.i18n.get(this.model.isReservation ? '$view_services' : this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
         }
         async handleProductClick() {
             const { product } = this.getData() || {};
@@ -626,7 +633,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         handleButtonClick() {
             if (this.isPreview)
                 return;
-            if (this.isPurchased) {
+            if (this.isPurchased || this.model.isReservation) {
                 this.handleProductClick();
                 return;
             }

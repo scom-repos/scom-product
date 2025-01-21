@@ -621,7 +621,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const { product } = this.getData() || {};
             if (this.isPreview || !product)
                 return;
-            window.location.assign(`#!/product-detail/${product.stallId}/${product.id}`);
+            window.location.assign(`#!/product/${product.stallId}/${product.id}`);
         }
         handleButtonClick() {
             if (this.isPreview)

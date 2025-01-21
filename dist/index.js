@@ -164,6 +164,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
             "add_to_cart": "Add to Cart",
             "buy_more": "Buy More",
+            "view_services": "View Services",
             "already_in_cart": "You already have {{quantity}} in your cart",
             "purchased_message": "You've purchased this product",
             "view_post_purchase_content": "View Post-Purchase Content",
@@ -179,6 +180,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
             "add_to_cart": "加入購物車",
             "buy_more": "購買更多",
+            "view_services": "查看服務",
             "already_in_cart": "您的購物車中已有{{quantity}}件",
             "purchased_message": "您已擁有此產品",
             "view_post_purchase_content": "查看購後內容",
@@ -194,6 +196,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
             "add_to_cart": "Thêm vào giỏ hàng",
             "buy_more": "Mua thêm",
+            "view_services": "Xem Dịch Vụ",
             "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
             "purchased_message": "Bạn đã mua sản phẩm này",
             "view_post_purchase_content": "Xem nội dung sau khi mua",
@@ -430,7 +433,7 @@ define("@scom/scom-product/formSchema.ts", ["require", "exports", "@scom/scom-pr
         }
     };
 });
-define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product/formSchema.ts", "@scom/scom-product/utils.ts"], function (require, exports, formSchema_1, utils_2) {
+define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-social-sdk", "@scom/scom-product/formSchema.ts", "@scom/scom-product/utils.ts"], function (require, exports, scom_social_sdk_1, formSchema_1, utils_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ProductModel = void 0;
@@ -556,10 +559,13 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-product
             const loggedInUserStr = localStorage.getItem('loggedInUser');
             return !!loggedInUserStr;
         }
+        get isReservation() {
+            return this._data?.product?.productType === scom_social_sdk_1.MarketplaceProductType.Reservation;
+        }
     }
     exports.ProductModel = ProductModel;
 });
-define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_1, index_css_1, model_1, translations_json_2, utils_3) {
+define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@scom/scom-social-sdk", "@scom/scom-product/index.css.ts", "@scom/scom-product/model.ts", "@scom/scom-product/translations.json.ts", "@scom/scom-product/utils.ts"], function (require, exports, components_4, scom_social_sdk_2, index_css_1, model_1, translations_json_2, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ScomProduct = void 0;
@@ -608,6 +614,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             }
             this.markdownDescription.visible = !!product?.description;
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+            this.lblPrice.visible = !this.model.isReservation;
             this.btnAddToCart.visible = !!product;
             this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.eventData.pubkey, product.id);
             this.updateProductMessage();
@@ -618,7 +625,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const itemCount = this.model.getItemCountInCart();
             this.lblMessage.visible = this.isPurchased || itemCount > 0;
             if (this.isPurchased) {
-                this.lblMessage.caption = this.i18n.get(product?.productType === scom_social_sdk_1.MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
+                this.lblMessage.caption = this.i18n.get(product?.productType === scom_social_sdk_2.MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
             }
             else {
                 this.lblMessage.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
@@ -628,11 +635,14 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const { product } = this.getData() || {};
             const itemCount = this.model.getItemCountInCart();
             let key;
-            if (this.isPurchased && (product?.productType === scom_social_sdk_1.MarketplaceProductType.Digital || product?.productType === scom_social_sdk_1.MarketplaceProductType.Reservation)) {
-                key = product?.productType === scom_social_sdk_1.MarketplaceProductType.Reservation ? "$buy_more" : "$view_post_purchase_content";
+            if (this.isPurchased && (product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital || this.model.isReservation)) {
+                key = this.model.isReservation ? "$buy_more" : "$view_post_purchase_content";
             }
             else if (itemCount > 0) {
                 key = "$buy_more";
+            }
+            else if (this.model.isReservation) {
+                key = "$view_services";
             }
             else {
                 key = "$add_to_cart";
@@ -649,7 +659,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             if (this.isPreview)
                 return;
             const { product } = this.getData() || {};
-            if (this.isPurchased && product?.productType === scom_social_sdk_1.MarketplaceProductType.Digital) {
+            if ((this.isPurchased && product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital) || this.model.isReservation) {
                 this.handleProductClick();
                 return;
             }

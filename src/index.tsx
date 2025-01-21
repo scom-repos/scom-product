@@ -88,6 +88,7 @@ export class ScomProduct extends Module {
         }
         this.markdownDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
+        this.lblPrice.visible = !this.model.isReservation;
         this.btnAddToCart.visible = !!product;
         this.isPurchased = await isPurchasedProduct(product.eventData.pubkey, product.id);
         this.updateProductMessage();
@@ -109,10 +110,12 @@ export class ScomProduct extends Module {
         const { product } = this.getData() || {};
         const itemCount = this.model.getItemCountInCart();
         let key: string;
-        if (this.isPurchased && (product?.productType === MarketplaceProductType.Digital || product?.productType === MarketplaceProductType.Reservation)) {
-            key = product?.productType === MarketplaceProductType.Reservation ? "$buy_more" : "$view_post_purchase_content";
+        if (this.isPurchased && (product?.productType === MarketplaceProductType.Digital || this.model.isReservation)) {
+            key = this.model.isReservation ? "$buy_more" : "$view_post_purchase_content";
         } else if (itemCount > 0) {
             key = "$buy_more";
+        } else if (this.model.isReservation) {
+            key = "$view_services";
         } else {
             key = "$add_to_cart"
         }
@@ -128,7 +131,7 @@ export class ScomProduct extends Module {
     private handleButtonClick() {
         if (this.isPreview) return;
         const { product } = this.getData() || {};
-        if (this.isPurchased && product?.productType === MarketplaceProductType.Digital) {
+        if ((this.isPurchased && product?.productType === MarketplaceProductType.Digital) || this.model.isReservation) {
             this.handleProductClick();
             return;
         }

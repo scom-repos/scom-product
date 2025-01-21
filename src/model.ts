@@ -1,3 +1,4 @@
+import { MarketplaceProductType } from "@scom/scom-social-sdk";
 import formSchema from "./formSchema";
 import { IProductInfo } from "./interface";
 import { fetchCommunityProducts, fetchCommunityStalls, getLoggedInUserId } from "./utils";
@@ -124,5 +125,9 @@ export class ProductModel {
   get isLoggedIn() {
     const loggedInUserStr = localStorage.getItem('loggedInUser');
     return !!loggedInUserStr;
+  }
+
+  get isReservation() {
+    return this._data?.product?.productType === MarketplaceProductType.Reservation;
   }
 }

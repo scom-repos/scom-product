@@ -168,6 +168,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "already_in_cart": "You already have {{quantity}} in your cart",
             "purchased_message": "You've purchased this product",
             "view_post_purchase_content": "View Post-Purchase Content",
+            "reserved_message": "You've reserved",
         },
         "zh-hant": {
             "stock": "庫存",
@@ -183,6 +184,7 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "already_in_cart": "您的購物車中已有{{quantity}}件",
             "purchased_message": "您已擁有此產品",
             "view_post_purchase_content": "查看購後內容",
+            "reserved_message": "您已預約",
         },
         "vi": {
             "stock": "số lượng hàng tồn kho",
@@ -197,7 +199,8 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "view_services": "Xem Dịch Vụ",
             "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
             "purchased_message": "Bạn đã mua sản phẩm này",
-            "view_post_purchase_content": "Xem nội dung sau khi mua"
+            "view_post_purchase_content": "Xem nội dung sau khi mua",
+            "reserved_message": "Bạn đã đặt chỗ",
         }
     };
 });
@@ -613,16 +616,38 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
             this.lblPrice.visible = !this.model.isReservation;
             this.btnAddToCart.visible = !!product;
-            if (product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital) {
-                this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.eventData.pubkey, product.id);
-            }
+            this.isPurchased = await (0, utils_3.isPurchasedProduct)(product.eventData.pubkey, product.id);
+            this.updateProductMessage();
             this.updateCartButton();
         }
-        updateCartButton() {
+        updateProductMessage() {
+            const { product } = this.getData() || {};
             const itemCount = this.model.getItemCountInCart();
             this.lblMessage.visible = this.isPurchased || itemCount > 0;
-            this.lblMessage.caption = this.isPurchased ? this.i18n.get("$purchased_message") : this.i18n.get('$already_in_cart', { quantity: itemCount });
-            this.btnAddToCart.caption = this.i18n.get(this.model.isReservation ? '$view_services' : this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
+            if (this.isPurchased) {
+                this.lblMessage.caption = this.i18n.get(product?.productType === scom_social_sdk_2.MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
+            }
+            else {
+                this.lblMessage.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+            }
+        }
+        updateCartButton() {
+            const { product } = this.getData() || {};
+            const itemCount = this.model.getItemCountInCart();
+            let key;
+            if (this.isPurchased && (product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital || this.model.isReservation)) {
+                key = this.model.isReservation ? "$buy_more" : "$view_post_purchase_content";
+            }
+            else if (itemCount > 0) {
+                key = "$buy_more";
+            }
+            else if (this.model.isReservation) {
+                key = "$view_services";
+            }
+            else {
+                key = "$add_to_cart";
+            }
+            this.btnAddToCart.caption = this.i18n.get(key);
         }
         async handleProductClick() {
             const { product } = this.getData() || {};
@@ -633,7 +658,8 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
         handleButtonClick() {
             if (this.isPreview)
                 return;
-            if (this.isPurchased || this.model.isReservation) {
+            const { product } = this.getData() || {};
+            if ((this.isPurchased && product?.productType === scom_social_sdk_2.MarketplaceProductType.Digital) || this.model.isReservation) {
                 this.handleProductClick();
                 return;
             }
@@ -644,6 +670,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                 await new Promise(resolve => setTimeout(resolve, 800));
                 this.btnAddToCart.rightIcon.spin = false;
                 this.btnAddToCart.rightIcon.visible = false;
+                this.updateProductMessage();
                 this.updateCartButton();
                 if (this.onProductAdded)
                     this.onProductAdded(stallId);

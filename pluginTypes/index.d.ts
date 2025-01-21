@@ -51,6 +51,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;
+            reserved_message: string;
         };
         "zh-hant": {
             stock: string;
@@ -65,6 +66,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;
+            reserved_message: string;
         };
         vi: {
             stock: string;
@@ -79,6 +81,7 @@ declare module "@scom/scom-product/translations.json.ts" {
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;
+            reserved_message: string;
         };
     };
     export default _default;
@@ -232,6 +235,7 @@ declare module "@scom/scom-product" {
         getTag(): any;
         setTag(value: any): void;
         private updateUIBySetData;
+        private updateProductMessage;
         private updateCartButton;
         private handleProductClick;
         private handleButtonClick;

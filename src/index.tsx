@@ -89,17 +89,34 @@ export class ScomProduct extends Module {
         this.markdownDescription.visible = !!product?.description;
         this.lblPrice.caption = `${product?.price || ""} ${product?.currency || ""}`;
         this.btnAddToCart.visible = !!product;
-        if (product.productType === MarketplaceProductType.Digital) {
-            this.isPurchased = await isPurchasedProduct(product.eventData.pubkey, product.id);
-        }
+        this.isPurchased = await isPurchasedProduct(product.eventData.pubkey, product.id);
+        this.updateProductMessage();
         this.updateCartButton();
     }
 
-    private updateCartButton() {
+    private updateProductMessage() {
+        const { product } = this.getData() || {};
         const itemCount = this.model.getItemCountInCart();
         this.lblMessage.visible = this.isPurchased || itemCount > 0;
-        this.lblMessage.caption = this.isPurchased ? this.i18n.get("$purchased_message") : this.i18n.get('$already_in_cart', { quantity: itemCount });
-        this.btnAddToCart.caption = this.i18n.get(this.isPurchased ? "$view_post_purchase_content" : itemCount > 0 ? "$buy_more" : "$add_to_cart");
+        if (this.isPurchased) {
+            this.lblMessage.caption = this.i18n.get(product?.productType === MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
+        } else {
+            this.lblMessage.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
+        }
+    }
+
+    private updateCartButton() {
+        const { product } = this.getData() || {};
+        const itemCount = this.model.getItemCountInCart();
+        let key: string;
+        if (this.isPurchased && (product?.productType === MarketplaceProductType.Digital || product?.productType === MarketplaceProductType.Reservation)) {
+            key = product?.productType === MarketplaceProductType.Reservation ? "$buy_more" : "$view_post_purchase_content";
+        } else if (itemCount > 0) {
+            key = "$buy_more";
+        } else {
+            key = "$add_to_cart"
+        }
+        this.btnAddToCart.caption = this.i18n.get(key);
     }
 
     private async handleProductClick() {
@@ -110,7 +127,8 @@ export class ScomProduct extends Module {
 
     private handleButtonClick() {
         if (this.isPreview) return;
-        if (this.isPurchased) {
+        const { product } = this.getData() || {};
+        if (this.isPurchased && product?.productType === MarketplaceProductType.Digital) {
             this.handleProductClick();
             return;
         }
@@ -121,6 +139,7 @@ export class ScomProduct extends Module {
             await new Promise(resolve => setTimeout(resolve, 800));
             this.btnAddToCart.rightIcon.spin = false;
             this.btnAddToCart.rightIcon.visible = false;
+            this.updateProductMessage();
             this.updateCartButton();
             if (this.onProductAdded) this.onProductAdded(stallId);
         });

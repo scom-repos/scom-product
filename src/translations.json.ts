@@ -12,6 +12,7 @@ export default {
         "already_in_cart": "You already have {{quantity}} in your cart",
         "purchased_message": "You've purchased this product",
         "view_post_purchase_content": "View Post-Purchase Content",
+        "reserved_message": "You've reserved",
     },
     "zh-hant": {
         "stock": "庫存",
@@ -26,6 +27,7 @@ export default {
         "already_in_cart": "您的購物車中已有{{quantity}}件",
         "purchased_message": "您已擁有此產品",
         "view_post_purchase_content": "查看購後內容",
+        "reserved_message": "您已預約",
     },
     "vi": {
         "stock": "số lượng hàng tồn kho",
@@ -39,6 +41,7 @@ export default {
         "buy_more": "Mua thêm",
         "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
         "purchased_message": "Bạn đã mua sản phẩm này",
-        "view_post_purchase_content": "Xem nội dung sau khi mua"
+        "view_post_purchase_content": "Xem nội dung sau khi mua",
+        "reserved_message": "Bạn đã đặt chỗ",
     }
 }

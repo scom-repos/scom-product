@@ -490,10 +490,11 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-social-
             const productStr = localStorage.getItem(key);
             if (productStr) {
                 const products = JSON.parse(productStr) || [];
-                const selectedProduct = products.find(p => p.id === product.id);
-                if (selectedProduct && selectedProduct.productType === scom_social_sdk_1.MarketplaceProductType.Reservation) {
-                    return selectedProduct.reservations?.length || 0;
+                if (product.productType === scom_social_sdk_1.MarketplaceProductType.Reservation) {
+                    const reservations = products.filter(v => v.parentProductId === product.id);
+                    return reservations.reduce((acc, item) => acc + item.quantity, 0);
                 }
+                const selectedProduct = products.find(p => p.id === product.id);
                 return selectedProduct?.quantity || 0;
             }
             return 0;

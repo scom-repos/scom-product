@@ -164,7 +164,9 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "Community Id/Creator's npub or ENS name",
             "add_to_cart": "Add to Cart",
             "buy_more": "Buy More",
-            "view_services": "View Services",
+            "book_now": "Book Now",
+            "you_have_a_reservation": "You have a reservation",
+            "you_have_reservations": "You have {{quantity}} reservations",
             "already_in_cart": "You already have {{quantity}} in your cart",
             "purchased_message": "You've purchased this product",
             "view_post_purchase_content": "View Post-Purchase Content",
@@ -180,7 +182,9 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "社群 Id/創作者的 npub 或 ENS 名稱",
             "add_to_cart": "加入購物車",
             "buy_more": "購買更多",
-            "view_services": "查看服務",
+            "book_now": "立即預訂",
+            "you_have_a_reservation": "您有一個預訂",
+            "you_have_reservations": "您有{{quantity}}個預訂",
             "already_in_cart": "您的購物車中已有{{quantity}}件",
             "purchased_message": "您已擁有此產品",
             "view_post_purchase_content": "查看購後內容",
@@ -196,7 +200,9 @@ define("@scom/scom-product/translations.json.ts", ["require", "exports"], functi
             "community_id/creator's_npub_or_ens_name": "ID cộng đồng/npub của người tạo hoặc tên ENS",
             "add_to_cart": "Thêm vào giỏ hàng",
             "buy_more": "Mua thêm",
-            "view_services": "Xem Dịch Vụ",
+            "book_now": "Đặt ngay",
+            "you_have_a_reservation": "Bạn có một đặt chỗ",
+            "you_have_reservations": "Bạn có {{quantity}} đặt chỗ",
             "already_in_cart": "Bạn đã có {{quantity}} cái trong giỏ hàng",
             "purchased_message": "Bạn đã mua sản phẩm này",
             "view_post_purchase_content": "Xem nội dung sau khi mua",
@@ -485,6 +491,9 @@ define("@scom/scom-product/model.ts", ["require", "exports", "@scom/scom-social-
             if (productStr) {
                 const products = JSON.parse(productStr) || [];
                 const selectedProduct = products.find(p => p.id === product.id);
+                if (selectedProduct && selectedProduct.productType === scom_social_sdk_1.MarketplaceProductType.Reservation) {
+                    return selectedProduct.reservations?.length || 0;
+                }
                 return selectedProduct?.quantity || 0;
             }
             return 0;
@@ -625,6 +634,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
             const itemCount = this.model.getItemCountInCart();
             this.lblMessage.visible = this.isPurchased || itemCount > 0;
             if (this.isPurchased) {
+                // TODO - check how many unfinished reservations the user has
                 this.lblMessage.caption = this.i18n.get(product?.productType === scom_social_sdk_2.MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
             }
             else {
@@ -642,7 +652,7 @@ define("@scom/scom-product", ["require", "exports", "@ijstech/components", "@sco
                 key = "$buy_more";
             }
             else if (this.model.isReservation) {
-                key = "$view_services";
+                key = "$book_now";
             }
             else {
                 key = "$add_to_cart";

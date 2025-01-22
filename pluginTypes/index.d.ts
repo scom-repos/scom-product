@@ -48,7 +48,9 @@ declare module "@scom/scom-product/translations.json.ts" {
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
             buy_more: string;
-            view_services: string;
+            book_now: string;
+            you_have_a_reservation: string;
+            you_have_reservations: string;
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;
@@ -64,7 +66,9 @@ declare module "@scom/scom-product/translations.json.ts" {
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
             buy_more: string;
-            view_services: string;
+            book_now: string;
+            you_have_a_reservation: string;
+            you_have_reservations: string;
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;
@@ -80,7 +84,9 @@ declare module "@scom/scom-product/translations.json.ts" {
             "community_id/creator's_npub_or_ens_name": string;
             add_to_cart: string;
             buy_more: string;
-            view_services: string;
+            book_now: string;
+            you_have_a_reservation: string;
+            you_have_reservations: string;
             already_in_cart: string;
             purchased_message: string;
             view_post_purchase_content: string;

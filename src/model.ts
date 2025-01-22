@@ -48,6 +48,9 @@ export class ProductModel {
     if (productStr) {
       const products = JSON.parse(productStr) || [];
       const selectedProduct = products.find(p => p.id === product.id);
+      if (selectedProduct && selectedProduct.productType === MarketplaceProductType.Reservation) {
+        return selectedProduct.reservations?.length || 0;
+      }
       return selectedProduct?.quantity || 0;
     }
     return 0;

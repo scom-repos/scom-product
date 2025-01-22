@@ -47,6 +47,10 @@ export class ProductModel {
     const productStr = localStorage.getItem(key);
     if (productStr) {
       const products = JSON.parse(productStr) || [];
+      if (product.productType === MarketplaceProductType.Reservation) {
+        const reservations = products.filter(v => v.parentProductId === product.id);
+        return reservations.reduce((acc, item) => acc + item.quantity, 0);
+      }
       const selectedProduct = products.find(p => p.id === product.id);
       return selectedProduct?.quantity || 0;
     }

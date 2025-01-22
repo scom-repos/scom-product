@@ -100,6 +100,7 @@ export class ScomProduct extends Module {
         const itemCount = this.model.getItemCountInCart();
         this.lblMessage.visible = this.isPurchased || itemCount > 0;
         if (this.isPurchased) {
+            // TODO - check how many unfinished reservations the user has
             this.lblMessage.caption = this.i18n.get(product?.productType === MarketplaceProductType.Reservation ? "$reserved_message" : "$purchased_message");
         } else {
             this.lblMessage.caption = this.i18n.get('$already_in_cart', { quantity: itemCount });
@@ -115,7 +116,7 @@ export class ScomProduct extends Module {
         } else if (itemCount > 0) {
             key = "$buy_more";
         } else if (this.model.isReservation) {
-            key = "$view_services";
+            key = "$book_now";
         } else {
             key = "$add_to_cart"
         }
